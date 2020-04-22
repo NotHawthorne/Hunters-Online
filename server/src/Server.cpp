@@ -131,8 +131,8 @@ int	Server::sendItemList(Player *p, std::map<int, Item *>list)
 int	Server::awardKill(Player *p)
 {
 	printf("%s gets %d exp\n", p->name, (p->lvl * 100) / 4);
-	int e = (p->lvl * 100) / 4;
-	int g = (((rand() % (p->lvl + 5)) + 1) * 100);;
+	int e = ((p->lvl * 100) / 4) * p->mon.count;
+	int g = (((rand() % (p->lvl + 5)) + 1) * 100) * p->mon.count;
 	p->exp += e;
 	p->gold += g;
 	notify(p, string_format("You've killed some monsters, gaining %d gold and %d experience.", g, e));
@@ -146,7 +146,7 @@ int	Server::awardKill(Player *p)
 		p->str += 2;
 		p->dex += 1;
 		p->intel += 1;
-		p->exp -= p->lvl * 1000;
+		p->exp -= (p->lvl - 1) * 1000;
 		notify(p, string_format("You've reached level %d!\n", p->lvl));
 	}
 	return (1);

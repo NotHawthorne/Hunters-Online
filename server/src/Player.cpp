@@ -18,7 +18,7 @@ int	Player::tick()
 	}
 	else
 	{
-		mon.count = rand() % 3;
+		mon.count = (rand() % 3) + 1;
 		mon.hp = (10 * lvl) * 3;
 		mon.level = lvl;
 		mon.dmg = lvl * 2;
