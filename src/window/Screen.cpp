@@ -83,8 +83,7 @@ int	CurseWar::Screen::update(t_packet *pack)
 {
 	mvwprintw(info, 1, 1, "gold:");
 	mvwprintw(info, 1, 6, pack->data[0]);
-	mvwprintw(info, 3, 1, "hunters:");
-	mvwprintw(info, 3, 9, pack->data[1]);
+	mvwprintw(info, 3, 1, "hunters: %s (%d g/s)", pack->data[1], std::atoi(pack->data[1]) * 25);
 	mvwprintw(info, 4, 1, "str:");
 	mvwprintw(info, 4, 5, pack->data[2]);
 	mvwprintw(info, 5, 1, "int:");

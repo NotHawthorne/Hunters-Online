@@ -7,6 +7,7 @@
 #include <fcntl.h>
 #include <signal.h>
 #include <sys/ioctl.h>
+#include <stdlib.h>
 #include "packet.h"
 
 namespace CurseWar

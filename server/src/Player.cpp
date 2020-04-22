@@ -11,7 +11,6 @@ int	Player::tick()
 		gold_gained += sd % 25;
 	}
 	gold += gold_gained;
-	printf("%s ticked!\n", name);
 	if (mon.hp > 0 && fd > 0)
 	{
 		mon.hp -= (str / 2);

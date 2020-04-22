@@ -53,10 +53,10 @@ CurseWar::Client::Client(char *user, char *pass)
 	server_addr.sin_port = htons(PORT);
 	ret = inet_pton(AF_INET, ADDRESS, &server_addr.sin_addr);
 	conn_fd = socket(AF_INET, SOCK_STREAM, 0);
-	int flags = fcntl(conn_fd, F_GETFL);
-	fcntl(conn_fd, F_SETFL, flags | O_NONBLOCK);
 	ret = connect(conn_fd, (struct sockaddr*)&server_addr,
 					sizeof(server_addr));
+	int flags = fcntl(conn_fd, F_GETFL);
+	fcntl(conn_fd, F_SETFL, flags | O_NONBLOCK);
 	printf("%d\n", ret);
 	if (errno)
 		printf("%s\n", strerror(errno));
