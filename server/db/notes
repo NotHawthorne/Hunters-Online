@@ -1,0 +1,41 @@
+users
+	->name (varchar[16])
+	->pass (varchar[16])
+
+stats
+	->name (varchar[16])
+	->gold (int)
+	->hunters (int)
+
+items
+	->id (int)
+	->prefix (varchar[16])
+	->name (varchar[16])
+	->suffix (varchar[16])
+	->desc (varchar[255])
+	->levelreq (int)
+	->strreq (int)
+	->dexreq (int)
+	->intreq (int)
+	->aspd (int)
+	->armor (int)
+	->mres (int)
+	->dmg_1 (int)
+	->dmg_2 (int)
+	->dmg_3 (int)
+	->data0 (int)
+	->data1 (int)
+	->data2 (int)
+	->data3 (int)
+	->data4 (int)
+	->data5 (int)
+	->val0 (int)
+	->val1 (int)
+	->val2 (int)
+	->val3 (int)
+	->val4 (int)
+	->val5 (int)
+
+inventory
+	->name (varchar[16])
+	->id (int, `items` id)
