@@ -1,1 +1,1 @@
-# cursewar
+# heroshell

@@ -1,8 +1,8 @@
 #include "../../includes/window.h"
 
-CurseWar::Screen	*mainscr;
+HeroShell::Screen	*mainscr;
 
-CurseWar::Screen::Screen()
+HeroShell::Screen::Screen()
 {
 	int	r,c;
 
@@ -36,6 +36,7 @@ CurseWar::Screen::Screen()
 	box(info, ':', '*');
 	refresh();
 	wrefresh(display);
+	wrefresh(display_port);
 	wrefresh(console);
 	wrefresh(info);
 }
@@ -83,7 +84,7 @@ void	scr_refresh(int sig)
 	wrefresh(mainscr->info);
 }
 
-int	CurseWar::Screen::update(t_packet *pack)
+int	HeroShell::Screen::update(t_packet *pack)
 {
 	if (std::atoi(pack->data[12]) > 0)
 		mvwprintw(info, 1, 1, "gold: %s * (10 ^ %s)", pack->data[0], pack->data[12]);
@@ -108,7 +109,7 @@ int	CurseWar::Screen::update(t_packet *pack)
 	return (1);
 }
 
-CurseWar::Screen::~Screen()
+HeroShell::Screen::~Screen()
 {
 	wborder(display, ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ');
 	wborder(console, ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ');

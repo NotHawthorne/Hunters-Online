@@ -1,6 +1,6 @@
 #include "../../includes/client.h"
 
-int	CurseWar::Client::sendPacket(char *id, char *command,
+int	HeroShell::Client::sendPacket(char *id, char *command,
 									char **data)
 {
 	t_packet	p;
@@ -16,13 +16,14 @@ int	CurseWar::Client::sendPacket(char *id, char *command,
 	return (1);
 }
 
-int	CurseWar::Client::updateDisplay(WINDOW *win, int new_state)
+int	HeroShell::Client::updateDisplay(WINDOW *win, int new_state)
 {
 	if (state == last_state)
 		return (0);
 	last_state = state;
 	state = new_state;
 	wclear(win);
+	wrefresh(win);
 	auto ite = inventory.begin();
 	int x = 0;
 	int n = ((LINES * 0.75) - 3) * inven_page;
@@ -49,6 +50,8 @@ int	CurseWar::Client::updateDisplay(WINDOW *win, int new_state)
 			wprintw(win, "empty");
 			break ;
 		case INSPECT:
+			if (inspect_slot >= inventory.size())
+				break ;
 			std::advance(ite, inspect_slot);
 			wprintw(win, "[%s]\n", item_base[ite->second->base_id]->name);
 			wprintw(win, "%s | %s | req: %d\n",
@@ -78,7 +81,7 @@ int	CurseWar::Client::updateDisplay(WINDOW *win, int new_state)
 	return (1);
 }
 
-int	CurseWar::Client::sendChat(char *data, size_t len, bool whisper, char *dst)
+int	HeroShell::Client::sendChat(char *data, size_t len, bool whisper, char *dst)
 {
 	t_packet	p;
 	int			x = 0;
@@ -107,7 +110,7 @@ int	CurseWar::Client::sendChat(char *data, size_t len, bool whisper, char *dst)
 	return (1);
 }
 
-void	CurseWar::Client::recvItemList(std::map<int, Item *> *l, t_packet *h)
+void	HeroShell::Client::recvItemList(std::map<int, Item *> *l, t_packet *h)
 {
 	int	amt = std::atoi(h->data[0]);
 	int i = 0;
@@ -126,7 +129,7 @@ void	CurseWar::Client::recvItemList(std::map<int, Item *> *l, t_packet *h)
 	}
 }
 
-CurseWar::Client::Client(char *user, char *pass)
+HeroShell::Client::Client(char *user, char *pass)
 {
 	int		ret;
 	char	**data = new char*[30];
@@ -182,7 +185,7 @@ static int	auras_load_callback(void *d, int argc, char **argv, char **colname)
 	return (0);
 }
 
-int	CurseWar::Client::initDB()
+int	HeroShell::Client::initDB()
 {
 	std::string iq = "SELECT * FROM item_base;";
 	std::string	aq = "SELECT * FROM auras;";
@@ -200,7 +203,7 @@ int	CurseWar::Client::initDB()
 	return (1);
 }
 
-CurseWar::Client::~Client()
+HeroShell::Client::~Client()
 {
 	printf("dead\n");
 }

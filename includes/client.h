@@ -30,7 +30,7 @@ enum display_states
 	INSPECT
 };
 
-namespace CurseWar
+namespace HeroShell
 {
 	class	Client
 	{
@@ -65,8 +65,8 @@ namespace CurseWar
 
 typedef struct	s_thread_data
 {
-	CurseWar::Client	*cli;
-	CurseWar::Screen	*scr;
+	HeroShell::Client	*cli;
+	HeroShell::Screen	*scr;
 }				t_thread_data;
 
 int		unpad(char *str);

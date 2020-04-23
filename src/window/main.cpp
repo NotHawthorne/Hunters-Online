@@ -1,7 +1,7 @@
 #include "../../includes/window.h"
 #include "../../includes/client.h"
 
-extern CurseWar::Screen *mainscr;
+extern HeroShell::Screen *mainscr;
 
 int		unpad(char *str)
 {
@@ -78,7 +78,7 @@ void	*listener(void *ptr)
 	return (NULL);
 }
 
-int		parse(char *str, CurseWar::Client *cli, CurseWar::Screen *scr)
+int		parse(char *str, HeroShell::Client *cli, HeroShell::Screen *scr)
 {
 	std::string	s(str);
 	std::vector<std::string> tokens;
@@ -108,7 +108,7 @@ int		parse(char *str, CurseWar::Client *cli, CurseWar::Screen *scr)
 			return (1);
 		}
 	}
-	if (cmd.compare(std::string("view")) == 0)
+	else if (cmd.compare(std::string("view")) == 0)
 	{
 		if (tokens.size() <= 1)
 			return (0);
@@ -149,7 +149,8 @@ int		parse(char *str, CurseWar::Client *cli, CurseWar::Screen *scr)
 		if ((des - 1) >= 0)
 		{
 			cli->inven_page = std::atoi(tokens[1].c_str()) - 1;
-			cli->last_state = -1;
+			if (cli->state == INVENTORY)
+				cli->last_state = -1;
 			cli->updateDisplay(scr->display_port, cli->state);
 		}
 		return (1);
@@ -163,6 +164,31 @@ int		parse(char *str, CurseWar::Client *cli, CurseWar::Screen *scr)
 		cli->updateDisplay(scr->display_port, INSPECT);
 		return (1);
 	}
+
+	else if (cmd.compare(std::string("help")) == 0)
+	{
+		if (tokens.size() >= 2 && tokens[1].size() > 0)
+		{
+			if (tokens[1].compare(std::string("inspect")) == 0)
+				wprintw(scr->log, "inspect [inventory_number]\n");
+			else if (tokens[1].compare(std::string("page")) == 0)
+				wprintw(scr->log, "page [inventory_page_number]\n");
+			else if (tokens[1].compare(std::string("whisper")) == 0 ||
+						tokens[1].compare(std::string("tell")) == 0 ||
+						tokens[1].compare(std::string("message")) == 0 ||
+						tokens[1].compare(std::string("pm")) == 0)
+				wprintw(scr->log, "%s [recipient_username] {msg}\n", tokens[1].c_str());
+			else if (tokens[1].compare(std::string("view")) == 0)
+				wprintw(scr->log, "view [inventory/equipment/home]\n");
+			else if (tokens[1].compare(std::string("buy")) == 0)
+				wprintw(scr->log, "buy [number] hunter(s)\n");
+			else
+				wprintw(scr->log, "no help available for %s\n", tokens[1].c_str());
+		}
+		else
+			wprintw(scr->log, "available commands:\nbuy, inspect, message [pm/tell/whisper], view\n"); 
+		return (1);
+	}
 	return (0);
 }
 
@@ -170,8 +196,8 @@ int		main(int argc, char **argv)
 {
 	if (argc != 3)
 		return (printf("usage: ./cursewar [user] [pass]\n"));
-	CurseWar::Client	cli(argv[1], argv[2]);
-	CurseWar::Screen	scr;
+	HeroShell::Client	cli(argv[1], argv[2]);
+	HeroShell::Screen	scr;
 	t_thread_data		d;
 	char				*buf;
 	pthread_t			listenthread;

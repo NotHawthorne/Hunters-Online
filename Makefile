@@ -1,4 +1,4 @@
-NAME = cursewar
+NAME = heroshell
 CC := g++
 
 all: $(NAME)
@@ -6,7 +6,7 @@ all: $(NAME)
 MODULES := src/window src/client includes
 LIBDIRS := 
 LIBS := -lncurses -lform -lpthread -lsqlite3
-CFLAGS := -Iincludes -Wall -Werror -Wextra -g -fsanitize=address
+CFLAGS := -Iincludes -Wall -Werror -Wextra 
 MODNAME := module.mk
 SRC :=
 

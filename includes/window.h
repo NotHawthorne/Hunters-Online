@@ -10,9 +10,9 @@
 #include <stdlib.h>
 #include "packet.h"
 
-# define WELCOME_MSG "Welcome to HeroShell!\nThis is your main display port, where your various windows (inventory, auction house, etc.) will appear.\nEnjoy the realm!\n"
+# define WELCOME_MSG "Welcome to HeroShell!\nThis is your main display port, where your various windows (inventory, auction house, etc.) will appear.\nIf you are confused, type 'help'.\nEnjoy the realm!\n"
 
-namespace CurseWar
+namespace HeroShell
 {
 		class	Screen
 		{
