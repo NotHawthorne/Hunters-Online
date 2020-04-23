@@ -8,10 +8,17 @@
 
 enum	Item_Types
 {
-	JUNK,
-	ARMOR,
-	WEAPON,
-	JEWELLERY
+	JUNK = 0,
+	ARMOR = 1,
+	WEAPON = 2,
+	JEWELLERY = 3
+};
+
+static char	*Item_Type_String[4] = {
+	"Junk",
+	"Armor",
+	"Weapon",
+	"Jewellery"
 };
 
 enum	Item_Armor_Classes
@@ -19,6 +26,12 @@ enum	Item_Armor_Classes
 	LIGHT,
 	MEDIUM,
 	HEAVY
+};
+
+static char	*Item_Armor_Class_String[3] = {
+	"Light",
+	"Medium",
+	"Heavy",
 };
 
 enum	Item_Weapon_Classes
@@ -38,10 +51,31 @@ enum	Item_Weapon_Classes
 	STAFF
 };
 
+static char	*Item_Weapon_Class_String[13] = {
+	"Sword",
+	"Shield",
+	"Mace",
+	"Axe",
+	"Dagger",
+	"Glaive",
+	"Knuckles",
+	"Sceptre",
+	"Bow",
+	"Crossbow",
+	"Pistol",
+	"Rifle",
+	"Staff"
+};
+
 enum	Item_Jewellery_Classes
 {
 	RING,
 	NECKLACE
+};
+
+static char	*Item_Jewellery_Class_String[2] = {
+	"Ring",
+	"Necklace"
 };
 
 enum	Item_Slots
@@ -59,6 +93,21 @@ enum	Item_Slots
 	FINGER2,
 	MAIN_HAND,
 	OFF_HAND
+};
+
+static char	*Item_Slot_String[12] = {
+	"Head",
+	"Shoulders",
+	"Chest",
+	"Legs",
+	"Feet",
+	"Hands",
+	"Wrists",
+	"Neck",
+	"Finger1",
+	"Finger2",
+	"Main Hand",
+	"Off-Hand"
 };
 
 class	Item {

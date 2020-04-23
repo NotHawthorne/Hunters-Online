@@ -143,6 +143,8 @@ int		parse(char *str, CurseWar::Client *cli, CurseWar::Screen *scr)
 	}
 	else if (cmd.compare(std::string("page")) == 0)
 	{
+		if (tokens.size() < 2)
+			return (0);
 		int des = std::atoi(tokens[1].c_str());
 		if ((des - 1) >= 0)
 		{
@@ -150,6 +152,15 @@ int		parse(char *str, CurseWar::Client *cli, CurseWar::Screen *scr)
 			cli->last_state = -1;
 			cli->updateDisplay(scr->display_port, cli->state);
 		}
+		return (1);
+	}
+	else if (cmd.compare(std::string("inspect")) == 0)
+	{
+		if (tokens.size() < 2)
+			return (0);
+		cli->inspect_slot = std::atoi(tokens[1].c_str());
+		cli->last_state = -1;
+		cli->updateDisplay(scr->display_port, INSPECT);
 		return (1);
 	}
 	return (0);

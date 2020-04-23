@@ -26,7 +26,8 @@ enum display_states
 {
 	WELCOME,
 	HOME,
-	INVENTORY
+	INVENTORY,
+	INSPECT
 };
 
 namespace CurseWar
@@ -40,7 +41,7 @@ namespace CurseWar
 		int	sendChat(char *msg, size_t len, bool whisper, char *dst);
 		int	initDB();
 		void	recvItemList(std::map<int, Item *> *l, t_packet *h);
-		int	updateDisplay(WINDOW *win, int state);
+		int	updateDisplay(WINDOW *win, int new_state);
 
 		sqlite3					*db;
 		std::map<int, Item *>	inventory;
@@ -52,6 +53,7 @@ namespace CurseWar
 		bool				eq_empty;
 		bool				inven_empty;
 		int					inven_page;
+		int					inspect_slot;
 		int					conn_fd;
 		struct sockaddr_in	server_addr;
 		char				name[16];

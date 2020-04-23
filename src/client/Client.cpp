@@ -16,11 +16,12 @@ int	CurseWar::Client::sendPacket(char *id, char *command,
 	return (1);
 }
 
-int	CurseWar::Client::updateDisplay(WINDOW *win, int state)
+int	CurseWar::Client::updateDisplay(WINDOW *win, int new_state)
 {
 	if (state == last_state)
 		return (0);
 	last_state = state;
+	state = new_state;
 	wclear(win);
 	auto ite = inventory.begin();
 	int x = 0;
@@ -46,6 +47,31 @@ int	CurseWar::Client::updateDisplay(WINDOW *win, int state)
 			break ;
 		case HOME:
 			wprintw(win, "empty");
+			break ;
+		case INSPECT:
+			std::advance(ite, inspect_slot);
+			wprintw(win, "[%s]\n", item_base[ite->second->base_id]->name);
+			wprintw(win, "%s | %s | req: %d\n",
+				Item_Type_String[item_base[ite->second->base_id]->item_type],
+				Item_Slot_String[item_base[ite->second->base_id]->slot],
+				item_base[ite->second->base_id]->item_levreq);
+			if (item_base[ite->second->base_id]->item_type == ARMOR)
+				wprintw(win, "%s\n", Item_Armor_Class_String[item_base[ite->second->base_id]->item_class]);
+			else if (item_base[ite->second->base_id]->item_type == WEAPON)
+				wprintw(win, "%s\n", Item_Weapon_Class_String[item_base[ite->second->base_id]->item_class]);
+			else if (item_base[ite->second->base_id]->item_type == JEWELLERY)
+				wprintw(win, "%s\n", Item_Jewellery_Class_String[item_base[ite->second->base_id]->item_class]);
+			else
+				break ;
+			if (item_base[ite->second->base_id]->damage_min > 0)
+				wprintw(win, "%d - %d dmg\n", item_base[ite->second->base_id]->damage_min, item_base[ite->second->base_id]->damage_max);
+			if (item_base[ite->second->base_id]->armor > 0)
+				wprintw(win, "%d armor\n", item_base[ite->second->base_id]->armor);
+			wprintw(win, "ilvl: %d\n", item_base[ite->second->base_id]->level);
+			for (int i = 0; i < 5 && ite->second->enchants[i]; i++)
+				wprintw(win, "%s (%d)\n", EffectStrings[auras[ite->second->enchants[i]]->enchant], ite->second->scale[i]);
+			break ;
+		default:
 			break ;
 	}
 	wrefresh(win);
