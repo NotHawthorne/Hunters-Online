@@ -12,6 +12,10 @@
 #include <unordered_map>
 #include <sstream>
 #include <vector>
+#include <sqlite3.h>
+#include <map>
+#include "effect.h"
+#include "item.h"
 #include "window.h"
 #include "packet.h"
 
@@ -27,12 +31,22 @@ namespace CurseWar
 		~Client();
 		int	sendPacket(char *id, char *command, char **data);
 		int	sendChat(char *msg, size_t len);
+		int	initDB();
+		void	recvItemList(std::map<int, Item *> *l, t_packet *h);
 
+		sqlite3					*db;
+		std::map<int, Item *>	inventory;
+		std::map<int, Item *>	equipment;
+		std::map<int, ItemBase *>	item_base;
+		std::map<int, Aura *>		auras;
+		bool				eq_empty;
+		bool				inven_empty;
 		int					conn_fd;
 		struct sockaddr_in	server_addr;
 		char				name[16];
 		int					gold;
 		int					hunters;
+		
 	};
 }
 

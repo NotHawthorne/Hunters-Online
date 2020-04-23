@@ -40,6 +40,25 @@ int	CurseWar::Client::sendChat(char *data, size_t len)
 	return (1);
 }
 
+void	CurseWar::Client::recvItemList(std::map<int, Item *> *l, t_packet *h)
+{
+	int	amt = std::atoi(h->data[0]);
+	int i = 0;
+
+	while (i < amt)
+	{
+		t_packet	p;
+
+		if (read(conn_fd, &p, sizeof(t_packet)) > 0)
+		{
+			Item	*ite = new Item(&p);
+			l->insert(std::pair<int, Item *>(ite->instance_id, ite));
+			i++;
+		}
+		usleep(5);
+	}
+}
+
 CurseWar::Client::Client(char *user, char *pass)
 {
 	int		ret;
@@ -62,6 +81,7 @@ CurseWar::Client::Client(char *user, char *pass)
 		printf("%s\n", strerror(errno));
 	data[0] = new char[16];
 	data[1] = NULL;
+	initDB();
 	size_t res = hasher(std::string(pass));
 	pass_hash = std::to_string(res);
 	strncpy(data[0], pass_hash.c_str(), pass_hash.size() > 16 ? 16 : pass_hash.size());
@@ -70,6 +90,44 @@ CurseWar::Client::Client(char *user, char *pass)
 	bzero(name, 16);
 	memcpy(name, user, strlen(user) >= 16 ? 15 : strlen(user));
 	sendPacket(user, "REQ_LOGIN", data);
+}
+
+static int	item_base_load_callback(void *d, int argc, char **argv, char **colname)
+{
+	if (!argc || !colname)
+		return (1);
+	ItemBase	*b = new ItemBase(argv);
+	std::map<int, ItemBase *> *list = (std::map<int, ItemBase *>*)d;
+	list->insert(std::pair<int, ItemBase *>(b->id, b));
+	return (0);
+}
+
+static int	auras_load_callback(void *d, int argc, char **argv, char **colname)
+{
+	if (!argc || !colname)
+		return (1);
+	Aura	*a = new Aura(argv);
+	std::map<int, Aura *> *list = (std::map<int, Aura *>*)d;
+	list->insert(std::pair<int, Aura *>(a->id, a));
+	return (0);
+}
+
+int	CurseWar::Client::initDB()
+{
+	std::string iq = "SELECT * FROM item_base;";
+	std::string	aq = "SELECT * FROM auras;";
+
+	int	rc = sqlite3_open("./info.db", &db);
+	int	ret = 0;
+	if (rc)
+		printf("db init failed\n");
+	ret = sqlite3_exec(db, iq.c_str(), item_base_load_callback, (void*)&item_base, NULL);
+	if (ret != SQLITE_OK)
+		printf("item load failed\n");
+	ret = sqlite3_exec(db, aq.c_str(), auras_load_callback, (void*)&auras, NULL);
+	if (ret != SQLITE_OK)
+		printf("aura load failed\n");
+	return (1);
 }
 
 CurseWar::Client::~Client()

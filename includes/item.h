@@ -4,7 +4,6 @@
 # include <string>
 # include <stdlib.h>
 # include <string.h>
-# include <map>
 # include "packet.h"
 
 enum	Item_Types
@@ -62,6 +61,17 @@ enum	Item_Slots
 	OFF_HAND
 };
 
+class	Item {
+public:
+	int			instance_id;
+	int			base_id;
+	int			rarity;
+	int			enchants[5];
+	int			scale[5];
+
+	Item(t_packet *pack);
+};
+
 class	ItemBase {
 public:
 	int			id;
@@ -77,19 +87,6 @@ public:
 	int			slot;
 
 	ItemBase(char **argv);
-};
-
-class	Item {
-public:
-	int			instance_id;
-	int			base_id;
-	int			rarity;
-	int			enchants[5];
-	int			scale[5];
-
-	Item(t_packet *pack);
-	Item();
-	Item(char **argv);
 };
 
 #endif

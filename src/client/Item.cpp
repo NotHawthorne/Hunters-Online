@@ -1,4 +1,4 @@
-#include "../includes/item.h"
+#include "../../includes/item.h"
 
 ItemBase::ItemBase(char **argv)
 {
@@ -16,11 +16,6 @@ ItemBase::ItemBase(char **argv)
 	slot = atoi(argv[10]);
 }
 
-Item::Item()
-{
-	
-}
-
 Item::Item(t_packet *pack)
 {
 	instance_id = atoi(pack->data[0]);
@@ -30,17 +25,5 @@ Item::Item(t_packet *pack)
 	{
 		enchants[i] = atoi(pack->data[i + 3]);
 		scale[i] = atoi(pack->data[i + 8]);
-	}
-}
-
-Item::Item(char **argv)
-{
-	instance_id = atoi(argv[0]);
-	base_id = atoi(argv[1]);
-	rarity = atoi(argv[2]);
-	for (int i = 0; i != 5; i++)
-	{
-		enchants[i] = atoi(argv[i + 3]);
-		scale[i] = atoi(argv[i + 8]);
 	}
 }

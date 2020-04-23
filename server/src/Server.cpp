@@ -37,6 +37,12 @@ Server::Server()
 	std::cout << "Loading auras...\n";
 	loadAuras();
 	std::cout << "Loaded " << auras.size() << " auras!\n";
+	std::cout << "Loading item instances...\n";
+	loadInstances();
+	std::cout << "Loaded " << items.size() << " item instances!\n";
+	std::cout << "Loading inventories...\n";
+	loadInventories();
+	std::cout << "done!\n";
 }
 
 int	Server::notify(Player *p, std::string info)
@@ -96,19 +102,24 @@ int	Server::sqlBackup()
 	return (1);
 }
 
-int	Server::sendItemList(Player *p, std::map<int, Item *>list)
+int	Server::sendItemList(Player *p, std::map<int, Item *> *list, int type)
 {
 	t_packet	header;
 
 	memcpy(header.id, "SERVER\0", 7);
 	memcpy(header.command, "ILIST_HEAD\0", 11);
-	memcpy(header.data[0], std::to_string(list.size()).c_str(), std::to_string(list.size()).size());
+	bzero(header.data[0], 16);
+	bzero(header.data[1], 16);
+	memcpy(header.data[0], std::to_string(list->size()).c_str(), std::to_string(list->size()).size());
+	memcpy(header.data[1], std::to_string(type).c_str(), std::to_string(type).size());
 	write(p->fd, &header, sizeof(t_packet));
-	for (std::map<int, Item *>::iterator it = list.begin(); it != list.end(); ++it)
+	for (std::map<int, Item *>::iterator it = list->begin(); it != list->end(); ++it)
 	{
 		t_packet	pa;
 		memcpy(pa.id, "SERVER\0", 7);
 		memcpy(pa.command, "ITEM\0", 5);
+		for (int i = 0; i != 15; i++)
+			bzero(pa.data[i], 16);
 		memcpy(pa.data[0], std::to_string(it->second->instance_id).c_str(), std::to_string(it->second->instance_id).size());
 		memcpy(pa.data[1], std::to_string(it->second->base_id).c_str(), std::to_string(it->second->base_id).size());
 		memcpy(pa.data[2], std::to_string(it->second->rarity).c_str(), std::to_string(it->second->rarity).size());
@@ -125,6 +136,50 @@ int	Server::sendItemList(Player *p, std::map<int, Item *>list)
 		bzero(pa.data[13], 16);
 		write(p->fd, &pa, sizeof(t_packet));
 	}
+	return (1);
+}
+
+Item	*Server::genItem(int level)
+{
+	Item	*ni = new Item();
+
+	ItemBase	*ti = item_bases[(rand() % item_bases.size()) + 1];
+	Aura	*ta = auras[(rand() % auras.size()) + 1];
+
+	ni->instance_id = items.size();
+	printf("instance id: %d\n", ni->instance_id);
+	while (ti->level > level)
+		ti = item_bases[(rand() % item_bases.size()) + 1];
+	ni->base_id = ti->id;
+	int		auras_ = (rand() % 5);
+	bzero(ni->enchants, sizeof(int) * 5);
+	bzero(ni->scale, sizeof(int) * 5);
+	ni->rarity = rand() % 100;
+	for (int i = 0; i != auras_ && ti->item_type != JUNK; i++)
+	{
+		while (ta->tier > (level % 10) + 1)
+			ta = auras[(rand() % auras.size()) + 1];
+		ni->enchants[i] = ta->id;
+	}
+	for (int i = 0; i != auras_ && ti->item_type != JUNK; i++)
+		ni->scale[i] = (rand() % 100);
+	items.insert(std::pair<int, Item *>(items.size(), ni));
+	std::string	q = string_format("INSERT INTO item_instance(id, base_id, rarity, enc1, enc2, enc3, enc4, enc5, sca1, sca2, sca3, sca4, sca5) VALUES (%d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d);", ni->instance_id, ni->base_id, ni->rarity, ni->enchants[0], ni->enchants[1], ni->enchants[2], ni->enchants[3], ni->enchants[4], ni->scale[0], ni->scale[1], ni->scale[2], ni->scale[3], ni->scale[4]);
+	int ret = sqlite3_exec(db, q.c_str(), NULL, 0, NULL);
+	if (ret != SQLITE_OK)
+		printf("error saving item\n");
+	printf("generated %s!\n", item_bases[ni->base_id]->name);
+	return (ni);
+}
+
+int		Server::grantItem(Player *p, Item *i)
+{
+	p->inventory.insert(std::pair<int, Item *>(p->inventory.size(), i));
+	std::string q = string_format("INSERT INTO inventory(name, id) VALUES (\"%s\", %d);", p->name, i->instance_id);
+	int res = sqlite3_exec(db, q.c_str(), NULL, 0, NULL);
+	if (res != SQLITE_OK)
+		printf("error granting item\n");
+	notify(p, string_format("You've found a %s!", item_bases[i->base_id]->name));
 	return (1);
 }
 
@@ -148,6 +203,11 @@ int	Server::awardKill(Player *p)
 		p->intel += 1;
 		p->exp -= (p->lvl - 1) * 1000;
 		notify(p, string_format("You've reached level %d!\n", p->lvl));
+	}
+	if (rand() % (100 - p->lvl) == 0)
+	{
+		grantItem(p, genItem(p->lvl));
+		sendItemList(p, &p->inventory, 0);
 	}
 	return (1);
 }
@@ -204,6 +264,43 @@ int	Server::loadPlayers()
 	int ret = sqlite3_exec(db, q.c_str(), playerLoad, (void*)&players, NULL);
 	if (ret != SQLITE_OK)
 		printf("player load failed %d\n", ret);
+	return (1);
+}
+
+static int	invenLoad(void *d, int argc, char **argv, char **colname)
+{
+	if (!argc || !colname)
+		return (0);
+	Server	*s = (Server *)d;
+	s->players[std::string(argv[0])]->inventory.insert(std::pair<int, Item *>(std::atoi(argv[1]), s->items[std::atoi(argv[1])]));
+	return (0);
+}
+
+int	Server::loadInventories()
+{
+	std::string q = ("SELECT * from inventory;");
+	int ret = sqlite3_exec(db, q.c_str(), invenLoad, (void*)this, NULL);
+	if (ret != SQLITE_OK)
+		printf("inven load failed\n");
+	return (1);
+}
+
+static int	instanceLoad(void *d, int argc, char **argv, char **colname)
+{
+	if (!argc || !colname)
+		return (0);
+	Server *s = (Server *)d;
+	Item	*i = new Item(argv);
+	s->items.insert(std::pair<int, Item *>(i->instance_id, i));
+	return (0);
+}
+
+int	Server::loadInstances()
+{
+	std::string q = ("SELECT * from item_instance;");
+	int ret = sqlite3_exec(db, q.c_str(), instanceLoad, (void*)this, NULL);
+	if (ret != SQLITE_OK)
+		printf("instance load failed\n");
 	return (1);
 }
 
@@ -351,6 +448,7 @@ int	Server::processPacket(t_packet *pack, int nfd)
 		{
 			p->fd = nfd;
 			sendStatus(p);
+			sendItemList(p, &p->inventory, 0);
 			return (1);
 		}
 		else

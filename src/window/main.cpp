@@ -33,6 +33,26 @@ void	*listener(void *ptr)
 				wprintw(d->scr->log, "%s: %s\n", p.id, st.c_str());
 				wrefresh(d->scr->log);
 			}
+			else if (strcmp(p.command, "ILIST_HEAD") == 0)
+			{
+				switch (atoi(p.data[1]))
+				{
+					case 0:
+						d->cli->inventory.clear();
+						d->cli->recvItemList(&d->cli->inventory, &p);
+						break ;
+					case 1:
+						d->cli->equipment.clear();
+						d->cli->recvItemList(&d->cli->equipment, &p);
+						break ;
+					default:
+						std::map<int, Item *> m;
+						d->cli->recvItemList(&m, &p);
+						printf("recieved %d items, dunno where they go tho so\n", atoi(p.data[0]));
+						printf("opcode %d\n", atoi(p.data[1]));
+						break ;
+				}
+			}
 			else
 				printf("err\n");
 		}
@@ -41,7 +61,7 @@ void	*listener(void *ptr)
 	return (NULL);
 }
 
-int		parse(char *str, CurseWar::Client *cli)
+int		parse(char *str, CurseWar::Client *cli, CurseWar::Screen *scr)
 {
 	std::string	s(str);
 	std::vector<std::string> tokens;
@@ -55,6 +75,8 @@ int		parse(char *str, CurseWar::Client *cli)
 	std::string cmd = tokens[0];
 	if (cmd.compare(std::string("buy")) == 0)
 	{
+		if (tokens.size() <= 2)
+			return (0);
 		std::string amt = tokens[1];
 		std::string	type = tokens[2];
 		if (type.compare("hunter") == 0 ||
@@ -66,6 +88,19 @@ int		parse(char *str, CurseWar::Client *cli)
 			memcpy(data[0], amt.c_str(), amt.size() > 16 ? 15 : amt.size());
 			data[0][amt.size() > 16 ? 15 : amt.size()] = 0;
 			cli->sendPacket(cli->name, "BUY_HUNTER", data);
+			return (1);
+		}
+	}
+	if (cmd.compare(std::string("view")) == 0)
+	{
+		if (tokens.size() <= 1)
+			return (0);
+		std::string	desire = tokens[1];
+		if (desire.compare("inventory") == 0)
+		{
+			for (std::map<int, Item *>::iterator it = cli->inventory.begin(); it != cli->inventory.end(); ++it)
+				wprintw(scr->log, "%s\n", cli->item_base[it->second->base_id]->name);
+			wrefresh(scr->log);
 			return (1);
 		}
 	}
@@ -130,7 +165,7 @@ int		main(int argc, char **argv)
 						exit(0);
 					}
 					//mvwprintw(scr.console, 1, 1, buf);
-					else if (!parse(buf, &cli))
+					else if (!parse(buf, &cli, &scr))
 						if (cli.sendChat(buf, (size_t)unpad(buf)) == 0)
 							mvwprintw(scr.console, 1, 1, "ERR              ");
 					set_field_buffer(scr.input[0], 0, "");
@@ -146,4 +181,4 @@ int		main(int argc, char **argv)
 		//wrefresh(scr.info);
 		i++;
 	}
-}	
+}

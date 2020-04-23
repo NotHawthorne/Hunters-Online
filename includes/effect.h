@@ -1,9 +1,7 @@
 #ifndef EFFECT_H
 # define EFFECT_H
 
-class Player;
-class Monster;
-# include "player.h"
+# include <stdlib.h>
 
 enum	Effects
 {
@@ -22,6 +20,22 @@ enum	Effects
 	HEALTH
 };
 
+static char	EffectStrings[][32] = {
+	"physical damage",
+	"attack speed",
+	"critical strike chance",
+	"critical strike multiplier",
+	"intellect",
+	"strength",
+	"dexterity",
+	"lifestealing",
+	"stun",
+	"chain lightning",
+	"poison",
+	"heal",
+	"health"
+};
+
 class	Aura {
 public:
 	int		id;
@@ -31,9 +45,6 @@ public:
 	int		tier;
 
 	Aura(char **argv);
-	int		proc(Player *p, Monster *m, int scale);
-	int		apply(Player *p, int scale);
-	int		remove(Player *p, int scale);
 };
 
 #endif

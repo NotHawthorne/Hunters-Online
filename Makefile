@@ -5,8 +5,8 @@ all: $(NAME)
 
 MODULES := src/window src/client includes
 LIBDIRS := 
-LIBS := -lncurses -lform -lpthread
-CFLAGS := -Iincludes -Wall -Werror -Wextra 
+LIBS := -lncurses -lform -lpthread -lsqlite3
+CFLAGS := -Iincludes -Wall -Werror -Wextra -g -fsanitize=address
 MODNAME := module.mk
 SRC :=
 

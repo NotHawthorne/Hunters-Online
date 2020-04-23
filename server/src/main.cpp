@@ -21,7 +21,7 @@ void	*player_manager(void *ptr)
 			if (ret == 2 && it->second->fd > 0)
 				serv->awardKill(it->second);
 			else if (ret == 3)
-				serv->notify(it->second, std::string("You have died and lost half of your total experience.\n"));
+				serv->notify(it->second, std::string("You have died and lost half of your total experience."));
 			if (FD_ISSET(it->second->fd, &serv->active_fd_set) && serv->sendStatus(it->second) <= 0)
 			{
 				printf("REMOVING PLAYER\n");

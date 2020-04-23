@@ -21,8 +21,8 @@
 # include "player.h"
 # include "packet.h"
 # include "utils.h"
-# include "item.h"
 # include "effect.h"
+# include "item.h"
 
 # define PORT 4242
 # define MAXMSG 512
@@ -46,9 +46,13 @@ public:
 	int		loginRequest(t_packet *p);
 	int		awardKill(Player *p);
 	int		notify(Player *p, std::string str);
-	int		sendItemList(Player *p, std::map<int, Item *>list);
+	int		sendItemList(Player *p, std::map<int, Item *> *list, int type);
 	int		loadBases();
 	int		loadAuras();
+	Item	*genItem(int level);
+	int		grantItem(Player *p, Item *i);
+	int		loadInventories();
+	int		loadInstances();
 
 	int								sock;
 	fd_set							active_fd_set;
