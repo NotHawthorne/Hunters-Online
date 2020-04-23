@@ -88,24 +88,17 @@ void	scr_refresh(int sig)
 int	HeroShell::Screen::update(t_packet *pack)
 {
 	if (std::atoi(pack->data[12]) > 0)
-		mvwprintw(info, 1, 1, "gold: %s * (10 ^ %s)", pack->data[0], pack->data[12]);
+		mvwprintw(info, 1, 1, "gold: %s * (10 ^ %s)     ", pack->data[0], pack->data[12]);
 	else
-		mvwprintw(info, 1, 1, "gold: %s", pack->data[0]);
-	mvwprintw(info, 3, 1, "hunters: %s (%d g/s)", pack->data[1], std::atoi(pack->data[1]) * 25);
-	mvwprintw(info, 4, 1, "str:");
-	mvwprintw(info, 4, 5, pack->data[2]);
-	mvwprintw(info, 5, 1, "int:");
-	mvwprintw(info, 5, 5, pack->data[3]);
-	mvwprintw(info, 6, 1, "dex:");
-	mvwprintw(info, 6, 5, pack->data[4]);
-	mvwprintw(info, 7, 1, "hp:");
-	mvwprintw(info, 7, 4, pack->data[5]);
-	mvwprintw(info, 8, 1, "mana:");
-	mvwprintw(info, 8, 6, pack->data[7]);
-	mvwprintw(info, 9, 1, "lvl:");
-	mvwprintw(info, 9, 5, pack->data[10]);
-	mvwprintw(info, 10, 1, "exp:");
-	mvwprintw(info, 10, 6, pack->data[11]);
+		mvwprintw(info, 1, 1, "gold: %s     ", pack->data[0]);
+	mvwprintw(info, 3, 1, "hunters: %s (%d g/s)     ", pack->data[1], std::atoi(pack->data[1]) * 25);
+	mvwprintw(info, 4, 1, "str: %s     ", pack->data[2]);
+	mvwprintw(info, 5, 1, "int: %s     ", pack->data[3]);
+	mvwprintw(info, 6, 1, "dex: %s     ", pack->data[4]);
+	mvwprintw(info, 7, 1, "hp: %s     ", pack->data[5]);
+	mvwprintw(info, 8, 1, "mana: %s     ", pack->data[7]);
+	mvwprintw(info, 9, 1, "lvl: %s     ", pack->data[10]);
+	mvwprintw(info, 10, 1, "exp: %s     ", pack->data[11]);
 	wrefresh(info);
 	return (1);
 }
