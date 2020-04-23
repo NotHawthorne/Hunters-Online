@@ -1,4 +1,5 @@
 #include "../../includes/login.h"
+#include "../../includes/packet.h"
 
 #define ctrl(x) ((x) * 0x1f)
 
@@ -39,6 +40,67 @@ LoginManager::~LoginManager()
 	endwin();
 }
 
+int	LoginManager::attemptLogin(int fd, char *user, char *pass)
+{
+	t_packet	p;
+	t_packet	r;
+
+	bzero(p.id, 16);
+	bzero(p.command, 16);
+	signal(SIGPIPE, SIG_IGN);
+	for (int i = 0; i != 30; i++)
+		bzero(p.data[i], 16);
+	std::hash<std::string> hasher;
+	std::string				pass_hash;
+	size_t	res = hasher(std::string(pass));
+	pass_hash = std::to_string(res);
+	memcpy(p.id, user, strlen(user) + 1);
+	memcpy(p.command, "REQ_LOGIN\0", 10);
+	strncpy(p.data[0], pass_hash.c_str(), pass_hash.size() >= 16 ? 15 : pass_hash.size());
+	if (write(fd, &p, sizeof(t_packet)) < 0)
+	{
+		mvwprintw(mainwin, 6, 1, "server down");
+		passfield = 0;
+		set_field_buffer(fields[0], 0, "");
+		set_field_buffer(fields[1], 0, "");
+		passfield = 0;
+		this->pass.clear();
+		return (0);
+	}
+	int i = 0;
+	memcpy(r.command, "err\0", 4);
+	while (1)
+	{
+		i++;
+		if (fd <= 0)
+		{
+			mvwprintw(mainwin, 6, 1, "server down");
+			return (0);
+		}
+		mvwprintw(mainwin, 6, 1, "waiting %s %s", user, pass);
+		int	nbytes = read(fd, &r, sizeof(t_packet));
+		if (fd > 0 && nbytes > 0 && strncmp(r.command, "AUTH_FAIL", 9) == 0)
+		{
+			mvwprintw(mainwin, 6, 1, "invalid login            ");
+			set_field_buffer(fields[0], 0, "");
+			set_field_buffer(fields[1], 0, "");
+			passfield = 0;
+			this->pass.clear();
+			return (0);
+		}
+		else if (fd > 0 && nbytes > 0 && strncmp(r.command, "AUTH_SUCCESS", 12) == 0)
+		{
+			mvwprintw(mainwin, 6, 1, "success");
+			return (1);
+		}
+		else if (fd <= 0)
+			mvwprintw(mainwin, 6, 1, "server down");
+		usleep(25);
+		wrefresh(mainwin);
+	}	
+	return (0);
+}
+
 int LoginManager::readInput()
 {
 	char	*userbuf = NULL;
@@ -74,7 +136,7 @@ int LoginManager::readInput()
 				break ;
 			case 10:
 				form_driver(login_form, REQ_VALIDATION);
-				form_driver(login_form, REQ_NEXT_FIELD);
+				form_driver(login_form, passfield ? REQ_PREV_FIELD : REQ_NEXT_FIELD);
 				userbuf = field_buffer(fields[0], 0);
 				if (passfield && (!userbuf || userbuf[0] == ' ' || pass.size() <= 0 || pass.size() > 16))
 				{

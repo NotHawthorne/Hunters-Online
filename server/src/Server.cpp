@@ -253,6 +253,7 @@ static int	playerLoad(void *d, int argc, char **argv, char **colName)
 static int	verify_callback(void *d, int argc, char **argv, char **colNames)
 {
 	int	*r = (int*)d;
+	printf("actual pass: %s\n", argv[1]);
 	if (argc)
 		*r = 1;
 	else if (!argc || !argv || !colNames)
@@ -425,6 +426,22 @@ int	Server::loginRequest(t_packet *pack)
 	return (ret);
 }
 
+int	Server::respondLogin(int nfd, bool success)
+{
+	t_packet p;
+
+	printf("responding to login...\n");
+	bzero(p.id, 16);
+	bzero(p.command, 16);
+	for (int i = 0; i != 30; i++)
+		bzero(p.data[i], 16);
+	memcpy(p.id, "SERVER", 6);
+	memcpy(p.command, success ? "AUTH_SUCCESS" : "AUTH_FAIL", success ? 12 : 9);
+	printf("%s\n", success ? "succeeded" : "failed");
+	write(nfd, &p, sizeof(t_packet));
+	return (1);
+}
+
 int	Server::processPacket(t_packet *pack, int nfd)
 {
 	std::string	plr(pack->id);
@@ -451,6 +468,7 @@ int	Server::processPacket(t_packet *pack, int nfd)
 	{
 		if (loginRequest(pack) == 1)
 		{
+			respondLogin(nfd, true);
 			p->fd = nfd;
 			sendStatus(p);
 			sendItemList(p, &p->inventory, 0);
@@ -458,6 +476,7 @@ int	Server::processPacket(t_packet *pack, int nfd)
 		}
 		else
 		{
+			respondLogin(nfd, false);
 			removePlayer(p);
 			return (-1);
 		}

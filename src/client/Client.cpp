@@ -129,40 +129,32 @@ void	HeroShell::Client::recvItemList(std::map<int, Item *> *l, t_packet *h)
 	}
 }
 
-HeroShell::Client::Client(char *user, char *pass)
+HeroShell::Client::Client()
 {
 	int		ret;
-	char	**data = new char*[30];
 	std::string	pass_hash;
 	std::hash<std::string>	hasher;
 
 	state = WELCOME;
 	last_state = -1;
 	inven_page = 0;
-	printf("%s %s\n", user, pass);
 	bzero(&server_addr, sizeof(struct sockaddr_in));
 	server_addr.sin_family = AF_INET;
 	server_addr.sin_port = htons(PORT);
 	ret = inet_pton(AF_INET, ADDRESS, &server_addr.sin_addr);
+	conn_fd = -1;
+	if (!ret)
+		return ;
 	conn_fd = socket(AF_INET, SOCK_STREAM, 0);
+	if (conn_fd <= 0)
+		return ;
 	ret = connect(conn_fd, (struct sockaddr*)&server_addr,
 					sizeof(server_addr));
+	if (ret < 0)
+		return ;
 	int flags = fcntl(conn_fd, F_GETFL);
 	fcntl(conn_fd, F_SETFL, flags | O_NONBLOCK);
-	printf("%d\n", ret);
-	if (errno)
-		printf("%s\n", strerror(errno));
-	data[0] = new char[16];
-	data[1] = NULL;
 	initDB();
-	size_t res = hasher(std::string(pass));
-	pass_hash = std::to_string(res);
-	strncpy(data[0], pass_hash.c_str(), pass_hash.size() > 16 ? 16 : pass_hash.size());
-	data[0][pass_hash.size() > 16 ? 15 : pass_hash.size() - 2] = 0;
-	printf("done\n");
-	bzero(name, 16);
-	memcpy(name, user, strlen(user) >= 16 ? 15 : strlen(user));
-	sendPacket(user, "REQ_LOGIN", data);
 }
 
 static int	item_base_load_callback(void *d, int argc, char **argv, char **colname)
@@ -205,5 +197,5 @@ int	HeroShell::Client::initDB()
 
 HeroShell::Client::~Client()
 {
-	printf("dead\n");
+	close(conn_fd);
 }

@@ -5,6 +5,10 @@
 #include <curses.h>
 #include <string.h>
 #include <string>
+#include <stdlib.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <signal.h>
 
 class	LoginManager
 {
@@ -18,6 +22,7 @@ public:
 	LoginManager();
 	~LoginManager();
 	int readInput();
+	int	attemptLogin(int fd, char *user, char *pass);
 };
 
 #endif

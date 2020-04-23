@@ -53,6 +53,7 @@ public:
 	int		grantItem(Player *p, Item *i);
 	int		loadInventories();
 	int		loadInstances();
+	int		respondLogin(int nfd, bool success);
 
 	int								sock;
 	fd_set							active_fd_set;

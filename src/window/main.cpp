@@ -196,16 +196,27 @@ int		parse(char *str, HeroShell::Client *cli, HeroShell::Screen *scr)
 
 int		main(int argc, char **argv)
 {
+	bool				valid = false;
 	LoginManager		*m = new LoginManager();
-	if (m->readInput() <= 0)
+	HeroShell::Client	*cli = NULL;
+	while (valid != true)
 	{
-		delete m;
-		return (0);
+		if (cli)
+			delete cli;
+		cli = new HeroShell::Client();
+		bzero(cli->name, 16);
+		if (m->readInput() > 0 && cli->conn_fd >= 0)
+		{
+			char	*us = field_buffer(m->fields[0], 0);
+			us[unpad(us)] = 0;
+			char	*pw = (char*)m->pass.c_str();
+			memcpy(cli->name, us, strlen(us));
+			if (m->attemptLogin(cli->conn_fd, us, pw) > 0)
+				break ;
+		}
+		else if (cli->conn_fd < 0)
+			mvwprintw(m->mainwin, 6, 1, "server dead! :(    ");
 	}
-	char	*us = field_buffer(m->fields[0], 0);
-	char	*pw = (char*)m->pass.c_str();
-	us[unpad(us)] = 0;
-	HeroShell::Client	cli(us, pw);
 	HeroShell::Screen	scr;
 	t_thread_data		d;
 	char				*buf;
@@ -214,7 +225,7 @@ int		main(int argc, char **argv)
 
 	mainscr = &scr;
 	buf = NULL;
-	d.cli = &cli;
+	d.cli = cli;
 	d.scr = &scr;
 	pthread_create(&listenthread, NULL, listener, &d);
 	while (1)
@@ -255,12 +266,12 @@ int		main(int argc, char **argv)
 					buf = field_buffer(scr.input[0], 0) + 1;
 					if (strncmp(buf, "exit", 4) == 0)
 					{
-						close(cli.conn_fd);
+						close(cli->conn_fd);
 						exit(0);
 					}
 					//mvwprintw(scr.console, 1, 1, buf);
-					else if (!parse(buf, &cli, &scr))
-						if (cli.sendChat(buf, (size_t)unpad(buf), 0, NULL) == 0)
+					else if (!parse(buf, cli, &scr))
+						if (cli->sendChat(buf, (size_t)unpad(buf), 0, NULL) == 0)
 							mvwprintw(scr.console, 1, 1, "ERR              ");
 					set_field_buffer(scr.input[0], 0, "");
 					form_driver(scr.form, '>');

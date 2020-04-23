@@ -35,7 +35,7 @@ namespace HeroShell
 	class	Client
 	{
 	public:
-		Client(char *user, char *pass);
+		Client();
 		~Client();
 		int	sendPacket(char *id, char *command, char **data);
 		int	sendChat(char *msg, size_t len, bool whisper, char *dst);
