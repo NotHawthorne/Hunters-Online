@@ -457,6 +457,17 @@ int	Server::processPacket(t_packet *pack, int nfd)
 			return (-1);
 		}
 	}
+	else if (cmd.compare("WHIS") == 0)
+	{
+		if (players.find(std::string(pack->data[0])) != players.end() && players[std::string(pack->data[0])]->fd > 0)
+		{
+			write(players[std::string(pack->data[0])]->fd, &(*pack), sizeof(t_packet));
+			write(nfd, &(*pack), sizeof(t_packet));
+		}
+		else
+			notify(p, string_format("User %s is offline.", pack->data[0]));
+		return (1);
+	}
 	else
 		printf("unhandled command: %s\n", cmd.c_str());
 	return (1);

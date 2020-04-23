@@ -10,6 +10,9 @@ CurseWar::Screen::Screen()
 	raw();
 	noecho();
 	cbreak();
+	start_color();
+	init_pair(1, COLOR_WHITE, COLOR_BLACK);
+	init_pair(2, COLOR_MAGENTA, COLOR_BLACK);
 	curs_set(0);
 	signal(SIGWINCH, scr_refresh);
 	display = newwin(LINES * 0.75, COLS * 0.75, 0, 0);

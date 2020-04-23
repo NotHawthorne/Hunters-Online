@@ -53,6 +53,18 @@ void	*listener(void *ptr)
 						break ;
 				}
 			}
+			else if (strcmp(p.command, "WHIS") == 0)
+			{
+				std::string	msg(p.data[2]);
+				for (int i = 3; p.data[i][0]; i++)
+					msg += std::string(p.data[i]);
+				wattron(d->scr->log, COLOR_PAIR(2));
+				wprintw(d->scr->log, "%s %s: %s\n",
+						strcmp(p.id, d->cli->name) ? "from" : "to",
+						strcmp(p.id, d->cli->name) ? p.id : p.data[0], msg.c_str());
+				wattron(d->scr->log, COLOR_PAIR(1));
+				wrefresh(d->scr->log);
+			}
 			else
 				printf("err\n");
 		}
@@ -103,6 +115,24 @@ int		parse(char *str, CurseWar::Client *cli, CurseWar::Screen *scr)
 			wrefresh(scr->log);
 			return (1);
 		}
+	}
+	else if (cmd.compare(std::string("whisper")) == 0 ||
+				cmd.compare(std::string("tell")) == 0 ||
+				cmd.compare(std::string("message")) == 0 ||
+				cmd.compare(std::string("pm")) == 0)
+	{
+		if (tokens.size() <= 3)
+			return (0);
+		std::string	dest(tokens[1]);
+		std::string	msg(tokens[2]);
+		for (int i = 3; i < tokens.size(); i++)
+			msg = msg + " " + tokens[i];
+		cli->sendChat((char*)msg.c_str(), msg.size(), 1, (char*)dest.c_str());
+		//wattron(scr->log, COLOR_PAIR(2));
+		//wprintw(scr->log, "to %s: %s\n", dest.c_str(), msg.c_str());
+		//wattron(scr->log, COLOR_PAIR(1));
+		//wrefresh(scr->log);
+		return (1);
 	}
 	return (0);
 }
@@ -166,7 +196,7 @@ int		main(int argc, char **argv)
 					}
 					//mvwprintw(scr.console, 1, 1, buf);
 					else if (!parse(buf, &cli, &scr))
-						if (cli.sendChat(buf, (size_t)unpad(buf)) == 0)
+						if (cli.sendChat(buf, (size_t)unpad(buf), 0, NULL) == 0)
 							mvwprintw(scr.console, 1, 1, "ERR              ");
 					set_field_buffer(scr.input[0], 0, "");
 					form_driver(scr.form, '>');

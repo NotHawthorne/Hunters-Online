@@ -30,7 +30,7 @@ namespace CurseWar
 		Client(char *user, char *pass);
 		~Client();
 		int	sendPacket(char *id, char *command, char **data);
-		int	sendChat(char *msg, size_t len);
+		int	sendChat(char *msg, size_t len, bool whisper, char *dst);
 		int	initDB();
 		void	recvItemList(std::map<int, Item *> *l, t_packet *h);
 

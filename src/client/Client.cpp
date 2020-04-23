@@ -16,19 +16,24 @@ int	CurseWar::Client::sendPacket(char *id, char *command,
 	return (1);
 }
 
-int	CurseWar::Client::sendChat(char *data, size_t len)
+int	CurseWar::Client::sendChat(char *data, size_t len, bool whisper, char *dst)
 {
 	t_packet	p;
-	int			x = 1;
+	int			x = 0;
 	int			y = 0;
 	std::string	l;
 
 	bzero(&p.id, 16);
 	bzero(&p.command, 16);
 	strncpy(p.id, name, strlen(name));
-	strncpy(p.command, "CHAT\0", 5);
+	strncpy(p.command, whisper == true ? "WHIS\0" : "CHAT\0", 5);
+	if (whisper == true)
+	{
+		bzero(p.data[x], 16);
+		memcpy(p.data[x++], dst, strlen(dst));
+	}
 	l = std::to_string((int)len);
-	strncpy(p.data[0], l.c_str(), l.size() + 1);
+	strncpy(p.data[x++], l.c_str(), l.size() + 1);
 	for (int i = 0; i < (int)len && data[i] && x < 30; i += 15)
 	{
 		bzero(p.data[x], 16);
