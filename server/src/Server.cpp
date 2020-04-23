@@ -368,6 +368,7 @@ int	Server::newPlayer(t_packet *pack, int nfd)
 	pl->lvl = 1;
 	pl->exp = 0;
 	players.insert(std::pair<std::string, Player *>(std::string(pl->name), pl));
+	notify(pl, "Successfully registered new acount! Welcome!");
 	return (1);
 }
 
@@ -463,7 +464,9 @@ int	Server::processPacket(t_packet *pack, int nfd)
 	}
 	else if (cmd.compare("WHIS") == 0)
 	{
-		if (players.find(std::string(pack->data[0])) != players.end() && players[std::string(pack->data[0])]->fd > 0)
+		if (strcmp(pack->data[0], pack->id) == 0)
+			notify(p, "You whisper to yourself for a while, hoping nobody notices. What a strange thing to do.");
+		else if (players.find(std::string(pack->data[0])) != players.end() && players[std::string(pack->data[0])]->fd > 0)
 		{
 			write(players[std::string(pack->data[0])]->fd, &(*pack), sizeof(t_packet));
 			write(nfd, &(*pack), sizeof(t_packet));

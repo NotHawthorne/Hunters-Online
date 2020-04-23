@@ -1,5 +1,6 @@
 #include "../../includes/window.h"
 #include "../../includes/client.h"
+#include "../../includes/login.h"
 
 extern HeroShell::Screen *mainscr;
 
@@ -187,6 +188,7 @@ int		parse(char *str, HeroShell::Client *cli, HeroShell::Screen *scr)
 		}
 		else
 			wprintw(scr->log, "available commands:\nbuy, inspect, message [pm/tell/whisper], view\n"); 
+		wrefresh(scr->log);
 		return (1);
 	}
 	return (0);
@@ -194,9 +196,16 @@ int		parse(char *str, HeroShell::Client *cli, HeroShell::Screen *scr)
 
 int		main(int argc, char **argv)
 {
-	if (argc != 3)
-		return (printf("usage: ./cursewar [user] [pass]\n"));
-	HeroShell::Client	cli(argv[1], argv[2]);
+	LoginManager		*m = new LoginManager();
+	if (m->readInput() <= 0)
+	{
+		delete m;
+		return (0);
+	}
+	char	*us = field_buffer(m->fields[0], 0);
+	char	*pw = (char*)m->pass.c_str();
+	us[unpad(us)] = 0;
+	HeroShell::Client	cli(us, pw);
 	HeroShell::Screen	scr;
 	t_thread_data		d;
 	char				*buf;
