@@ -34,6 +34,7 @@ public:
 	int		groupid;
 	int		lvl;
 	int		exp;
+	int		gold_exponent;
 
 	int		tick();
 };

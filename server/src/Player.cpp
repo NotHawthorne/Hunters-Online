@@ -3,14 +3,14 @@
 int	Player::tick()
 {
 	unsigned int		gold_gained = 0;
-	unsigned int		sd = rand();
 
-	for (int i = 0; i != hunters; i++)
-	{
-		sd = ((sd << 5) + sd) + i;
-		gold_gained += sd % 25;
-	}
+	gold_gained = (((rand() % 25) + 1) * hunters) / ((gold_exponent + 1) * 10);
 	gold += gold_gained;
+	if (gold >= 1000000000)
+	{
+		gold_exponent++;
+		gold /= 10;
+	}
 	if (mon.hp > 0 && fd > 0)
 	{
 		mon.hp -= (str / 2);

@@ -46,7 +46,7 @@ namespace CurseWar
 		char				name[16];
 		int					gold;
 		int					hunters;
-		
+		int					gold_exponent;
 	};
 }
 

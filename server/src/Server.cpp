@@ -79,7 +79,7 @@ int	Server::sqlBackup()
 	for (std::map<std::string, Player *>::iterator it = players.begin(); it != players.end(); ++it)
 	{
 		q += string_format(
-			"UPDATE stats SET gold = %d, hunters = %d, str = %d, intel = %d, dex = %d, hp = %d, max_hp = %d, mana = %d, max_mana = %d, groupid = %d, lvl = %d, exp = %d WHERE name = \"%s\"; ",
+			"UPDATE stats SET gold = %d, hunters = %d, str = %d, intel = %d, dex = %d, hp = %d, max_hp = %d, mana = %d, max_mana = %d, groupid = %d, lvl = %d, exp = %d, gold_exponent = %d WHERE name = \"%s\"; ",
 			it->second->gold,
 			it->second->hunters,
 			it->second->str,
@@ -92,6 +92,7 @@ int	Server::sqlBackup()
 			it->second->groupid,
 			it->second->lvl,
 			it->second->exp,
+			it->second->gold_exponent,
 			it->second->name);
 	}
 	int rc = sqlite3_exec(db, q.c_str(), NULL, 0, NULL);
@@ -242,6 +243,7 @@ static int	playerLoad(void *d, int argc, char **argv, char **colName)
 	pl->groupid = std::atoi(argv[10]);
 	pl->lvl = std::atoi(argv[11]);
 	pl->exp = std::atoi(argv[12]);
+	pl->gold_exponent = std::atoi(argv[13]);
 	pl->fd = -1;
 	ret->insert(std::pair<std::string, Player *>(std::string(argv[0]), pl));
 	printf("[%s]\n", argv[1]);
@@ -384,6 +386,7 @@ int	Server::sendStatus(Player *p)
 	std::string _groupid = std::to_string(p->groupid);
 	std::string _lvl = std::to_string(p->lvl);
 	std::string _exp = std::to_string(p->exp);
+	std::string _gold_exponent = std::to_string(p->gold_exponent);
 
 	memcpy(pack.id, "SERVER", 7);
 	memcpy(pack.command, "STATUS", 7);
@@ -399,6 +402,7 @@ int	Server::sendStatus(Player *p)
 	memcpy(pack.data[9], _groupid.c_str(), _groupid.size() + 1);
 	memcpy(pack.data[10], _lvl.c_str(), _lvl.size() + 1);
 	memcpy(pack.data[11], _exp.c_str(), _exp.size() + 1);
+	memcpy(pack.data[12], _gold_exponent.c_str(), _gold_exponent.size() + 1);
 	if (write(p->fd, &pack, sizeof(t_packet)) <= 0)
 		printf("error writing to fd: %d\n", p->fd);
 	return (write(p->fd, &pack, sizeof(t_packet)));
