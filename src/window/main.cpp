@@ -29,9 +29,13 @@ void	*listener(void *ptr)
 			{
 				std::string		st("");
 				int a = atoi(p.data[0]);
+				int res = strcmp(p.command, "NOTIFY");
+				
+				wattron(d->scr->log, COLOR_PAIR(res ? 1 : 3));
 				for (int i = 1; i < 30 && st.size() < a; i++)
 					st += std::string(p.data[i]);
 				wprintw(d->scr->log, "%s: %s\n", p.id, st.c_str());
+				wattron(d->scr->log, COLOR_PAIR(1));
 				wrefresh(d->scr->log);
 			}
 			else if (strcmp(p.command, "ILIST_HEAD") == 0)

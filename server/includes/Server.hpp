@@ -23,6 +23,7 @@
 # include "utils.h"
 # include "effect.h"
 # include "item.h"
+# include "config.h"
 
 # define PORT 4242
 # define MAXMSG 512
