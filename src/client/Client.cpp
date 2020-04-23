@@ -16,6 +16,41 @@ int	CurseWar::Client::sendPacket(char *id, char *command,
 	return (1);
 }
 
+int	CurseWar::Client::updateDisplay(WINDOW *win, int state)
+{
+	if (state == last_state)
+		return (0);
+	last_state = state;
+	wclear(win);
+	auto ite = inventory.begin();
+	int x = 0;
+	switch (state)
+	{
+		case WELCOME:
+			wprintw(win, WELCOME_MSG);
+			break ;
+		case INVENTORY:
+			if (((LINES * 0.75) - 4) * inven_page > inventory.size())
+				break ;
+			std::advance(ite, ((LINES * 0.75) - 4) * inven_page);
+			while (x < (LINES * 0.75) - 4 && ite != inventory.end())
+			{
+				wprintw(win, "%-8d -- %s\n", ite->first, item_base[ite->second->base_id]->name);
+				ite++;
+				x++;
+			}
+			wprintw(win, "page: %d", inven_page + 1);
+			//for (int i = 1 + (((LINES / 0.75) - 3) * inven_page); i < 1 + ((((LINES / 0.75) - 3) * (inven_page + 1))) && i < inventory.size(); i++)
+				//wprintw(win, "%s\n", item_base[inventory[i]->base_id]->name);
+			break ;
+		case HOME:
+			wprintw(win, "empty");
+			break ;
+	}
+	wrefresh(win);
+	return (1);
+}
+
 int	CurseWar::Client::sendChat(char *data, size_t len, bool whisper, char *dst)
 {
 	t_packet	p;
@@ -71,6 +106,9 @@ CurseWar::Client::Client(char *user, char *pass)
 	std::string	pass_hash;
 	std::hash<std::string>	hasher;
 
+	state = WELCOME;
+	last_state = -1;
+	inven_page = 0;
 	printf("%s %s\n", user, pass);
 	bzero(&server_addr, sizeof(struct sockaddr_in));
 	server_addr.sin_family = AF_INET;

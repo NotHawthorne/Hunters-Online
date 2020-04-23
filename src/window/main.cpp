@@ -40,6 +40,10 @@ void	*listener(void *ptr)
 					case 0:
 						d->cli->inventory.clear();
 						d->cli->recvItemList(&d->cli->inventory, &p);
+						if (d->cli->state != INVENTORY)
+							break ;
+						d->cli->last_state = -1;
+						d->cli->updateDisplay(d->scr->display_port, INVENTORY);
 						break ;
 					case 1:
 						d->cli->equipment.clear();
@@ -68,6 +72,7 @@ void	*listener(void *ptr)
 			else
 				printf("err\n");
 		}
+		d->cli->updateDisplay(d->scr->display_port, d->cli->state);
 		usleep(50);
 	}
 	return (NULL);
@@ -110,6 +115,8 @@ int		parse(char *str, CurseWar::Client *cli, CurseWar::Screen *scr)
 		std::string	desire = tokens[1];
 		if (desire.compare("inventory") == 0)
 		{
+			cli->state = INVENTORY;
+			cli->updateDisplay(scr->display_port, INVENTORY);
 			for (std::map<int, Item *>::iterator it = cli->inventory.begin(); it != cli->inventory.end(); ++it)
 				wprintw(scr->log, "%s\n", cli->item_base[it->second->base_id]->name);
 			wrefresh(scr->log);
@@ -133,6 +140,16 @@ int		parse(char *str, CurseWar::Client *cli, CurseWar::Screen *scr)
 		//wattron(scr->log, COLOR_PAIR(1));
 		//wrefresh(scr->log);
 		return (1);
+	}
+	else if (cmd.compare(std::string("page")) == 0)
+	{
+		int des = std::atoi(tokens[1].c_str());
+		if ((des - 1) >= 0)
+		{
+			cli->inven_page = std::atoi(tokens[1].c_str()) - 1;
+			cli->last_state = -1;
+			cli->updateDisplay(scr->display_port, cli->state);
+		}
 	}
 	return (0);
 }

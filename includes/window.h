@@ -10,6 +10,8 @@
 #include <stdlib.h>
 #include "packet.h"
 
+# define WELCOME_MSG "Welcome to HeroShell!\nThis is your main display port, where your various windows (inventory, auction house, etc.) will appear.\nEnjoy the realm!\n"
+
 namespace CurseWar
 {
 		class	Screen
@@ -20,10 +22,13 @@ namespace CurseWar
 			WINDOW	*console;
 			WINDOW	*log;
 			WINDOW	*display;
+			WINDOW	*display_port;
 			WINDOW	*info;
 			FIELD	*input[2];
 			FORM	*form;
 			int		update(t_packet *p);
+			int		state;
+			int		last_state;
 		};
 }
 

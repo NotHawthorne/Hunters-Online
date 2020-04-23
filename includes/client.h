@@ -22,6 +22,13 @@
 #define ADDRESS "127.0.0.1"
 #define PORT 4242
 
+enum display_states
+{
+	WELCOME,
+	HOME,
+	INVENTORY
+};
+
 namespace CurseWar
 {
 	class	Client
@@ -33,14 +40,18 @@ namespace CurseWar
 		int	sendChat(char *msg, size_t len, bool whisper, char *dst);
 		int	initDB();
 		void	recvItemList(std::map<int, Item *> *l, t_packet *h);
+		int	updateDisplay(WINDOW *win, int state);
 
 		sqlite3					*db;
 		std::map<int, Item *>	inventory;
 		std::map<int, Item *>	equipment;
 		std::map<int, ItemBase *>	item_base;
 		std::map<int, Aura *>		auras;
+		int					state;
+		int					last_state;
 		bool				eq_empty;
 		bool				inven_empty;
+		int					inven_page;
 		int					conn_fd;
 		struct sockaddr_in	server_addr;
 		char				name[16];

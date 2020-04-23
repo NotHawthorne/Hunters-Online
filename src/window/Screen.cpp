@@ -16,6 +16,7 @@ CurseWar::Screen::Screen()
 	curs_set(0);
 	signal(SIGWINCH, scr_refresh);
 	display = newwin(LINES * 0.75, COLS * 0.75, 0, 0);
+	display_port = newwin((LINES * 0.75 - 2), (COLS * 0.75) - 2, 1, 1);
 	console = newwin(LINES * 0.25, COLS, LINES * 0.75, 0);
 	log = newwin((LINES * 0.25) - 2, COLS - 2, (LINES*0.75) + 1, 1);
 	info = newwin(LINES * 0.75, COLS * 0.25, 0, COLS * 0.75);
