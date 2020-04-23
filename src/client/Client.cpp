@@ -24,18 +24,19 @@ int	CurseWar::Client::updateDisplay(WINDOW *win, int state)
 	wclear(win);
 	auto ite = inventory.begin();
 	int x = 0;
+	int n = ((LINES * 0.75) - 3) * inven_page;
 	switch (state)
 	{
 		case WELCOME:
 			wprintw(win, WELCOME_MSG);
 			break ;
 		case INVENTORY:
-			if (((LINES * 0.75) - 4) * inven_page > inventory.size())
+			if (((LINES * 0.75) - 3) * inven_page > inventory.size())
 				break ;
-			std::advance(ite, ((LINES * 0.75) - 4) * inven_page);
+			std::advance(ite, ((LINES * 0.75) - 3) * inven_page);
 			while (x < (LINES * 0.75) - 4 && ite != inventory.end())
 			{
-				wprintw(win, "%-8d -- %s\n", ite->first, item_base[ite->second->base_id]->name);
+				wprintw(win, "%-8d -- %s\n", x + n, item_base[ite->second->base_id]->name);
 				ite++;
 				x++;
 			}

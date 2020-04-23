@@ -150,6 +150,7 @@ int		parse(char *str, CurseWar::Client *cli, CurseWar::Screen *scr)
 			cli->last_state = -1;
 			cli->updateDisplay(scr->display_port, cli->state);
 		}
+		return (1);
 	}
 	return (0);
 }
