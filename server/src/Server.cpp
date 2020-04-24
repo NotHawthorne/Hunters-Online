@@ -97,6 +97,21 @@ int	Server::sqlBackup()
 			it->second->exp,
 			it->second->gold_exponent,
 			it->second->name);
+		q += string_format("UPDATE equip SET head = %d, shoulders = %d, chest = %d, legs = %d, feet = %d, hands = %d, wrists = %d, waist = %d, neck = %d, finger1 = %d, finger2 = %d, main_hand = %d, off_hand = %d WHERE name = \"%s\";",
+			it->second->equip.find(0) != it->second->equip.end() ? it->second->equip[0]->instance_id : 0,
+			it->second->equip.find(1) != it->second->equip.end() ? it->second->equip[1]->instance_id : 0,
+			it->second->equip.find(2) != it->second->equip.end() ? it->second->equip[2]->instance_id : 0,
+			it->second->equip.find(3) != it->second->equip.end() ? it->second->equip[3]->instance_id : 0,
+			it->second->equip.find(4) != it->second->equip.end() ? it->second->equip[4]->instance_id : 0,
+			it->second->equip.find(5) != it->second->equip.end() ? it->second->equip[5]->instance_id : 0,
+			it->second->equip.find(6) != it->second->equip.end() ? it->second->equip[6]->instance_id : 0,
+			it->second->equip.find(7) != it->second->equip.end() ? it->second->equip[7]->instance_id : 0,
+			it->second->equip.find(8) != it->second->equip.end() ? it->second->equip[8]->instance_id : 0,
+			it->second->equip.find(9) != it->second->equip.end() ? it->second->equip[9]->instance_id : 0,
+			it->second->equip.find(10) != it->second->equip.end() ? it->second->equip[10]->instance_id : 0,
+			it->second->equip.find(11) != it->second->equip.end() ? it->second->equip[11]->instance_id : 0,
+			it->second->equip.find(12) != it->second->equip.end()? it->second->equip[12]->instance_id : 0,
+			it->second->name);
 	}
 	int rc = sqlite3_exec(db, q.c_str(), NULL, 0, NULL);
 	if (rc != SQLITE_OK)

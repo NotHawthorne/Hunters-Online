@@ -21,28 +21,31 @@ int	Player::tick(Server *s)
 	if (fd <= 0)
 		return (1);
 	printf("%zu\n", equip.size());
-	for (std::map<int, Item *>::iterator it = equip.begin(); it != equip.end(); ++it)
+	if (equip.size() > 0)
 	{
-		for (int i = 0; i != 5; i++)
+		for (std::map<int, Item *>::iterator it = equip.begin(); it != equip.end(); ++it)
 		{
-			printf("%s (%d)\n", EffectStrings[it->second->enchants[i]], it->second->scale[i]);
-			if (it->second->enchants[i] == PHYS_DMG)
-				dmg += it->second->scale[i];
-			else if (it->second->enchants[i] == STR)
-				strbuff += it->second->scale[i];
-			else if (it->second->enchants[i] == DEX)
-				dexbuff += it->second->scale[i];
-			else if (it->second->enchants[i] == INT)
-				intbuff += it->second->scale[i];
-			else if (it->second->enchants[i] == LIFESTEAL)
-				lifesteal_amt += it->second->scale[i];
-			else if (it->second->enchants[i] == HEAL)
-				heal_amt += it->second->scale[i];
+			for (int i = 0; i != 5; i++)
+			{
+				printf("%d\n", it->second->enchants[i]);
+				if (it->second->enchants[i] == PHYS_DMG)
+					dmg += it->second->scale[i];
+				else if (it->second->enchants[i] == STR)
+					strbuff += it->second->scale[i];
+				else if (it->second->enchants[i] == DEX)
+					dexbuff += it->second->scale[i];
+				else if (it->second->enchants[i] == INT)
+					intbuff += it->second->scale[i];
+				else if (it->second->enchants[i] == LIFESTEAL)
+					lifesteal_amt += it->second->scale[i];
+				else if (it->second->enchants[i] == HEAL)
+					heal_amt += it->second->scale[i];
+			}
+			if (s->item_bases[it->second->base_id]->armor)
+				armor_mit += s->item_bases[it->second->base_id]->armor;
+			if (s->item_bases[it->second->base_id]->damage_min)
+				dmg += (s->item_bases[it->second->base_id]->damage_min + (rand() % (s->item_bases[it->second->base_id]->damage_max - s->item_bases[it->second->base_id]->damage_min)));
 		}
-		if (s->item_bases[it->second->base_id]->armor)
-			armor_mit += s->item_bases[it->second->base_id]->armor;
-		if (s->item_bases[it->second->base_id]->damage_min)
-			dmg += (s->item_bases[it->second->base_id]->damage_min + (rand() % (s->item_bases[it->second->base_id]->damage_max - s->item_bases[it->second->base_id]->damage_min)));
 	}
 	if (heal_amt)
 		hp += heal_amt;
