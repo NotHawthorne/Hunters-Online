@@ -180,7 +180,7 @@ Item	*Server::genItem(int level)
 	for (int i = 0; i != auras_ && ti->item_type != JUNK; i++)
 	{
 		ta = auras[(rand() % auras.size()) + 1];
-		while (ta->tier > (level % 10) + 1)
+		while (ta->tier > (level) + 1)
 			ta = auras[(rand() % auras.size()) + 1];
 		ni->enchants[i] = ta->id;
 	}

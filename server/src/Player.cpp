@@ -10,6 +10,7 @@ int	Player::tick(Server *s)
 	int					lifesteal_amt = 0;
 	int					heal_amt = 0;
 	int					armor_mit = 0;
+	int					max_hp_mod = 0;
 
 	gold_gained = (((rand() % 25) + 1) * hunters) / ((gold_exponent + 1) * 10);
 	gold += gold_gained;
@@ -38,6 +39,8 @@ int	Player::tick(Server *s)
 					lifesteal_amt += it->second->scale[i];
 				else if (it->second->enchants[i] == HEAL)
 					heal_amt += it->second->scale[i];
+				else if (it->second->enchants[i] == HEALTH)
+					max_hp_mod += it->second->scale[i];
 			}
 			if (s->item_bases[it->second->base_id]->armor)
 				armor_mit += s->item_bases[it->second->base_id]->armor;
@@ -66,17 +69,17 @@ int	Player::tick(Server *s)
 	if (hp <= 0)
 	{
 		printf("%s died!\n", name);
-		hp = max_hp;
+		hp = (max_hp + max_hp_mod);
 		exp /= 2;
 		mana = max_mana;
 		return (3);
 	}
-	if (hp < max_hp)
+	if (hp < (max_hp + max_hp_mod))
 		hp++;
 	if (mana < max_mana)
 		mana += intel + intbuff;
-	if (hp > max_hp)
-		hp = max_hp;
+	if (hp > (max_hp + max_hp_mod))
+		hp = (max_hp + max_hp_mod);
 	s->sendStatus(this);
 	return (packet_queue->send(fd));
 }

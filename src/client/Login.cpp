@@ -136,6 +136,11 @@ int LoginManager::readInput()
 						break ;
 				}
 				break ;
+			case '\t':
+				form_driver(login_form, REQ_VALIDATION);
+				form_driver(login_form, passfield ? REQ_PREV_FIELD : REQ_NEXT_FIELD);
+				passfield = !passfield;
+				break ;
 			case 4:
 				return (0);
 				break ;
