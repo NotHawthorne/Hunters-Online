@@ -25,12 +25,22 @@ int	HeroShell::Client::updateDisplay(WINDOW *win, int new_state)
 	wclear(win);
 	wrefresh(win);
 	auto ite = inventory.begin();
+	std::map<int, Item *>::iterator it_eq = equipment.begin();
 	int x = 0;
 	int n = ((LINES * 0.75) - 3) * inven_page;
 	switch (state)
 	{
 		case WELCOME:
 			wprintw(win, WELCOME_MSG);
+			break ;
+		case EQUIPMENT:
+			wprintw(win, "equipment (%d/12):\n", equipment.size());
+			while (x < equipment.size())
+			{
+				wprintw(win, "%-8d -- %s\n", x, item_base[it_eq->second->base_id]->name);
+				it_eq++;
+				x++;
+			}
 			break ;
 		case INVENTORY:
 			if (((LINES * 0.75) - 3) * inven_page > inventory.size())
@@ -48,6 +58,31 @@ int	HeroShell::Client::updateDisplay(WINDOW *win, int new_state)
 			break ;
 		case HOME:
 			wprintw(win, "empty");
+			break ;
+		case EINSPECT:
+			if (inspect_slot >= equipment.size())
+				break ;
+			std::advance(it_eq, inspect_slot);
+			wprintw(win, "[%s] (Equipped)\n", item_base[it_eq->second->base_id]->name);
+			wprintw(win, "%s | %s | req: %d\n",
+				Item_Type_String[item_base[it_eq->second->base_id]->item_type],
+				Item_Slot_String[item_base[it_eq->second->base_id]->slot],
+				item_base[it_eq->second->base_id]->item_levreq);
+			if (item_base[it_eq->second->base_id]->item_type == ARMOR)
+				wprintw(win, "%s\n", Item_Armor_Class_String[item_base[it_eq->second->base_id]->item_class]);
+			else if (item_base[it_eq->second->base_id]->item_type == WEAPON)
+				wprintw(win, "%s\n", Item_Weapon_Class_String[item_base[it_eq->second->base_id]->item_class]);
+			else if (item_base[it_eq->second->base_id]->item_type == JEWELLERY)
+				wprintw(win, "%s\n", Item_Jewellery_Class_String[item_base[it_eq->second->base_id]->item_class]);
+			else
+				break ;
+			if (item_base[it_eq->second->base_id]->damage_min > 0)
+				wprintw(win, "%d - %d dmg\n", item_base[it_eq->second->base_id]->damage_min, item_base[it_eq->second->base_id]->damage_max);
+			if (item_base[it_eq->second->base_id]->armor > 0)
+				wprintw(win, "%d armor\n", item_base[it_eq->second->base_id]->armor);
+			wprintw(win, "ilvl: %d\n", item_base[it_eq->second->base_id]->level);
+			for (int i = 0; i < 5 && it_eq->second->enchants[i]; i++)
+				wprintw(win, "%s (%d)\n", EffectStrings[auras[it_eq->second->enchants[i]]->enchant], it_eq->second->scale[i]);
 			break ;
 		case INSPECT:
 			if (inspect_slot >= inventory.size())

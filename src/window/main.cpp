@@ -91,6 +91,7 @@ int		parse(char *str, HeroShell::Client *cli, HeroShell::Screen *scr)
 	std::string	inter;
 	std::locale loc;
 	char	**data = new char*[30];
+	int x = 0;
 
 	while (getline(checkl, inter, ' '))
 		tokens.push_back(inter);
@@ -124,6 +125,26 @@ int		parse(char *str, HeroShell::Client *cli, HeroShell::Screen *scr)
 			cli->updateDisplay(scr->display_port, INVENTORY);
 			for (std::map<int, Item *>::iterator it = cli->inventory.begin(); it != cli->inventory.end(); ++it)
 				wprintw(scr->log, "%s\n", cli->item_base[it->second->base_id]->name);
+			wrefresh(scr->log);
+			return (1);
+		}
+		else if (desire.compare("equipment") == 0)
+		{
+			if (cli->equipment.size() < 1)
+			{
+				wprintw(scr->log, "No equipment! Try to <equip> something first.\n");
+				wrefresh(scr->log);
+				return (1);
+			}
+
+			cli->state = EQUIPMENT;
+			cli->updateDisplay(scr->display_port, EQUIPMENT);
+			for (std::map<int, Item *>::iterator it_eq = cli->equipment.begin(); \
+				it_eq != cli->equipment.end(); it_eq++)
+			{
+				wprintw(scr->log, "%d - %s\n", x, cli->item_base[it_eq->second->base_id]->name);
+				++x;
+			}
 			wrefresh(scr->log);
 			return (1);
 		}
@@ -167,6 +188,15 @@ int		parse(char *str, HeroShell::Client *cli, HeroShell::Screen *scr)
 		cli->inspect_slot = std::atoi(tokens[1].c_str());
 		cli->last_state = -1;
 		cli->updateDisplay(scr->display_port, INSPECT);
+		return (1);
+	}
+	else if (cmd.compare(std::string("einspect")) == 0)
+	{
+		if (tokens.size() < 2)
+			return (0);
+		cli->inspect_slot = std::atoi(tokens[1].c_str());
+		cli->last_state = -1;
+		cli->updateDisplay(scr->display_port, EINSPECT);
 		return (1);
 	}
 	else if (cmd.compare(std::string("equip")) == 0)

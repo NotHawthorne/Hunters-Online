@@ -27,7 +27,9 @@ enum display_states
 	WELCOME,
 	HOME,
 	INVENTORY,
-	INSPECT
+	EQUIPMENT,
+	INSPECT,
+	EINSPECT
 };
 
 namespace HeroShell
