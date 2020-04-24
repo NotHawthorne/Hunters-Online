@@ -124,7 +124,10 @@ int		parse(char *str, HeroShell::Client *cli, HeroShell::Screen *scr)
 			cli->state = INVENTORY;
 			cli->updateDisplay(scr->display_port, INVENTORY);
 			for (std::map<int, Item *>::iterator it = cli->inventory.begin(); it != cli->inventory.end(); ++it)
-				wprintw(scr->log, "%s\n", cli->item_base[it->second->base_id]->name);
+			{
+				wprintw(scr->log, "%d - %s\n", x, cli->item_base[it->second->base_id]->name);
+				++x;
+			}
 			wrefresh(scr->log);
 			return (1);
 		}
