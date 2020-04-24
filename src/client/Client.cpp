@@ -152,14 +152,25 @@ void	HeroShell::Client::recvItemList(std::map<int, Item *> *l, t_packet *h)
 
 	while (i < amt)
 	{
-		t_packet	p;
+		char		data[sizeof(t_packet)];
+		t_packet	*p;
+		int			tmp;
+		int			rbytes;
 
-		if (read(conn_fd, &p, sizeof(t_packet)) > 0)
+		rbytes = read(conn_fd, data, sizeof(t_packet));
+		if (rbytes < 0)
+			continue ;
+		while (rbytes > 0 && rbytes < sizeof(t_packet))
 		{
-			Item	*ite = new Item(&p);
-			l->insert(std::pair<int, Item *>(l->size(), ite));
-			i++;
+			tmp = read(conn_fd, data + rbytes, sizeof(t_packet) - rbytes);
+			if (tmp > 0)
+				rbytes += tmp;
 		}
+		p = (t_packet *)&data;
+
+		Item	*ite = new Item(p);
+		l->insert(std::pair<int, Item *>(l->size(), ite));
+		i++;
 		usleep(5);
 	}
 }

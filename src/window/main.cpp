@@ -2,7 +2,7 @@
 #include "../../includes/client.h"
 #include "../../includes/login.h"
 
-# define DEBUG 1
+# define DEBUG 0
 
 extern HeroShell::Screen *mainscr;
 
@@ -18,29 +18,36 @@ int		unpad(char *str)
 void	*listener(void *ptr)
 {
 	t_thread_data	*d = (t_thread_data*)ptr;
-	t_packet		p;
+	t_packet		*p;
+	char			data[sizeof(t_packet)];
 
 	while (1)
 	{
-		int	rbytes = read(d->cli->conn_fd, &p, sizeof(t_packet));
+		int	tmp;
+		int	rbytes = read(d->cli->conn_fd, data, sizeof(t_packet));
 		while (rbytes > 0 && rbytes < sizeof(t_packet))
-			rbytes += read(d->cli->conn_fd, &p + rbytes, sizeof(t_packet) - rbytes);
+		{
+			tmp = read(d->cli->conn_fd, data + rbytes, sizeof(t_packet) - rbytes);
+			if (tmp > 0)
+				rbytes += tmp;
+		}
+		p = (t_packet *)&data;
 		if (rbytes > 0)
 		{
 			if (DEBUG == 1)
-				wprintw(d->scr->log, "recieved: %s\n", p.command);
-			if (strcmp(p.command, "STATUS") == 0)
-				d->scr->update(&p);
-			else if (strcmp(p.command, "CHAT") == 0 ||
-						strcmp(p.command, "NOTIFY") == 0)
+				wprintw(d->scr->log, "recieved: %s\n", p->command);
+			if (strcmp(p->command, "STATUS") == 0)
+				d->scr->update(p);
+			else if (strcmp(p->command, "CHAT") == 0 ||
+						strcmp(p->command, "NOTIFY") == 0)
 			{
 				std::string		st("");
-				int a = atoi(p.data[0]);
-				int res = strcmp(p.command, "NOTIFY");
+				int a = atoi(p->data[0]);
+				int res = strcmp(p->command, "NOTIFY");
 				
 				for (int i = 1; i < 30 && st.size() < a; i++)
-					st += std::string(p.data[i]);
-				if (strcmp(p.id, "SERVER") == 0)
+					st += std::string(p->data[i]);
+				if (strcmp(p->id, "SERVER") == 0)
 				{
 					wattron(d->scr->log, COLOR_PAIR(res ? 1 : 3));
 					wprintw(d->scr->log, "%s\n", st.c_str());
@@ -50,18 +57,18 @@ void	*listener(void *ptr)
 				else
 				{
 					wattron(d->scr->chat, COLOR_PAIR(res ? 1 : 3));
-					wprintw(d->scr->chat, "%s: %s\n", p.id, st.c_str());
+					wprintw(d->scr->chat, "%s: %s\n", p->id, st.c_str());
 					wattron(d->scr->chat, COLOR_PAIR(1));
 					wrefresh(d->scr->chat);
 				}
 			}
-			else if (strcmp(p.command, "ILIST_HEAD") == 0)
+			else if (strcmp(p->command, "ILIST_HEAD") == 0)
 			{
-				switch (atoi(p.data[1]))
+				switch (atoi(p->data[1]))
 				{
 					case 0:
 						d->cli->inventory.clear();
-						d->cli->recvItemList(&d->cli->inventory, &p);
+						d->cli->recvItemList(&d->cli->inventory, p);
 						if (d->cli->state != INVENTORY)
 							break ;
 						d->cli->last_state = -1;
@@ -69,30 +76,30 @@ void	*listener(void *ptr)
 						break ;
 					case 1:
 						d->cli->equipment.clear();
-						d->cli->recvItemList(&d->cli->equipment, &p);
+						d->cli->recvItemList(&d->cli->equipment, p);
 						break ;
 					default:
 						std::map<int, Item *> m;
-						d->cli->recvItemList(&m, &p);
-						printf("recieved %d items, dunno where they go tho so\n", atoi(p.data[0]));
-						printf("opcode %d\n", atoi(p.data[1]));
+						d->cli->recvItemList(&m, p);
+						printf("recieved %d items, dunno where they go tho so\n", atoi(p->data[0]));
+						printf("opcode %d\n", atoi(p->data[1]));
 						break ;
 				}
 			}
-			else if (strcmp(p.command, "WHIS") == 0)
+			else if (strcmp(p->command, "WHIS") == 0)
 			{
-				std::string	msg(p.data[2]);
-				for (int i = 3; p.data[i][0]; i++)
-					msg += std::string(p.data[i]);
+				std::string	msg(p->data[2]);
+				for (int i = 3; p->data[i][0]; i++)
+					msg += std::string(p->data[i]);
 				wattron(d->scr->chat, COLOR_PAIR(2));
 				wprintw(d->scr->chat, "%s %s: %s\n",
-						strcmp(p.id, d->cli->name) ? "from" : "to",
-						strcmp(p.id, d->cli->name) ? p.id : p.data[0], msg.c_str());
+						strcmp(p->id, d->cli->name) ? "from" : "to",
+						strcmp(p->id, d->cli->name) ? p->id : p->data[0], msg.c_str());
 				wattron(d->scr->chat, COLOR_PAIR(1));
 				wrefresh(d->scr->chat);
 			}
 			else
-				wprintw(d->scr->log, "Unhandled msg: %s by %s\n", p.id, p.command);
+				wprintw(d->scr->log, "Unhandled msg: %s by %s\n", p->id, p->command);
 		}
 		d->cli->updateDisplay(d->scr->display, d->cli->state);
 		usleep(50);
