@@ -1,7 +1,6 @@
 #ifndef PLAYER_H
 # define PLAYER_H
 
-
 class Server;
 # include <map>
 # include <string>
@@ -9,10 +8,20 @@ class Server;
 
 class	Monster {
 public:
+	char	name[16];
+	int		id;
 	int		level;
 	int		hp;
 	int		dmg;
+	int		armor;
 	int		count;
+};
+
+class	Area {
+	char	name[32];
+	int		level_min;
+	int		level_max;
+	int		monster_ids[5];
 };
 
 class	Player {
@@ -37,6 +46,8 @@ public:
 	int		lvl;
 	int		exp;
 	int		gold_exponent;
+
+	int		area;
 
 	int		tick(Server *s);
 };

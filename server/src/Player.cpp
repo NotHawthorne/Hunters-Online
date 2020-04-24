@@ -20,14 +20,12 @@ int	Player::tick(Server *s)
 	}
 	if (fd <= 0)
 		return (1);
-	printf("%zu\n", equip.size());
 	if (equip.size() > 0)
 	{
 		for (std::map<int, Item *>::iterator it = equip.begin(); it != equip.end(); ++it)
 		{
 			for (int i = 0; i != 5; i++)
 			{
-				printf("%d\n", it->second->enchants[i]);
 				if (it->second->enchants[i] == PHYS_DMG)
 					dmg += it->second->scale[i];
 				else if (it->second->enchants[i] == STR)
