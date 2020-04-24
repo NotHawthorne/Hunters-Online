@@ -22,7 +22,10 @@ void	*listener(void *ptr)
 
 	while (1)
 	{
-		if (read(d->cli->conn_fd, &p, sizeof(t_packet)) > 0)
+		int	rbytes = read(d->cli->conn_fd, &p, sizeof(t_packet));
+		while (rbytes > 0 && rbytes < sizeof(t_packet))
+			rbytes += read(d->cli->conn_fd, &p + rbytes, sizeof(t_packet) - rbytes);
+		if (rbytes > 0)
 		{
 			if (DEBUG == 1)
 				wprintw(d->scr->log, "recieved: %s\n", p.command);

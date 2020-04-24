@@ -41,7 +41,6 @@ int	PacketQueue::push(t_packet *p)
 		is_empty = false;
 	}
 	size++;
-	printf("pushed %s command. new size: %zu\n", p->command, size);
 	return (1);
 }
 
@@ -57,7 +56,6 @@ t_packet	*PacketQueue::pop()
 	delete q;
 	if (!p)
 	{
-		printf("end of queue\n");
 		is_empty = true;
 	}
 	q = p;
