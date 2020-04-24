@@ -75,7 +75,7 @@ void	*listener(void *ptr)
 				wrefresh(d->scr->log);
 			}
 			else
-				printf("err\n");
+				wprintw(d->scr->log, "Unhandled msg: %s by %s\n", p.id, p.command);
 		}
 		d->cli->updateDisplay(d->scr->display_port, d->cli->state);
 		usleep(50);
@@ -169,7 +169,25 @@ int		parse(char *str, HeroShell::Client *cli, HeroShell::Screen *scr)
 		cli->updateDisplay(scr->display_port, INSPECT);
 		return (1);
 	}
-
+	else if (cmd.compare(std::string("equip")) == 0)
+	{
+		t_packet	np;
+		bzero(np.id, 16);
+		bzero(np.command, 16);
+		bzero(np.data[0], 16);
+		bzero(np.data[1], 16);
+		memcpy(np.id, cli->name, strlen(cli->name));
+		memcpy(np.command, "EQUIP", 5);
+		if (tokens.size() < 2)
+			return (1);
+		int	slot = std::stoi(tokens[1]);
+		if (slot >= cli->inventory.size())
+			return (1);
+		std::string	des = std::to_string(cli->inventory[std::stoi(tokens[1])]->instance_id);
+		memcpy(np.data[0], des.c_str(), des.size());
+		write(cli->conn_fd, &np, sizeof(t_packet));
+		return (1);
+	}
 	else if (cmd.compare(std::string("help")) == 0)
 	{
 		if (tokens.size() >= 2 && tokens[1].size() > 0)

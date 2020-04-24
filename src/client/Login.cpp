@@ -3,6 +3,9 @@
 
 #define ctrl(x) ((x) * 0x1f)
 
+static int	to_exit = 0;
+static void	int_handler(int signum) { to_exit = 1; }
+
 LoginManager::LoginManager()
 {
 	int	r, c;
@@ -11,6 +14,11 @@ LoginManager::LoginManager()
 	noecho();
 	raw();
 	curs_set(0);
+	struct sigaction sa;
+	memset(&sa, 0, sizeof(struct sigaction));
+	sa.sa_handler = int_handler;
+	sa.sa_flags = 0;
+	//sigaction(SIGINT, &sa, NULL);
 	passfield = 0;
 	mainwin = newwin(8, (COLS / 3) + 2, LINES / 3, COLS / 3);
 	fields[0] = new_field(1, COLS / 3, 2, 1, 0, 0);
@@ -38,6 +46,7 @@ LoginManager::~LoginManager()
 	free_field(fields[1]);
 	free_field(fields[2]);
 	endwin();
+	curs_set(1);
 }
 
 int	LoginManager::attemptLogin(int fd, char *user, char *pass)
@@ -69,7 +78,7 @@ int	LoginManager::attemptLogin(int fd, char *user, char *pass)
 	}
 	int i = 0;
 	memcpy(r.command, "err\0", 4);
-	while (1)
+	while (to_exit != 1)
 	{
 		i++;
 		if (fd <= 0)
@@ -77,7 +86,6 @@ int	LoginManager::attemptLogin(int fd, char *user, char *pass)
 			mvwprintw(mainwin, 6, 1, "server down");
 			return (0);
 		}
-		mvwprintw(mainwin, 6, 1, "waiting %s %s", user, pass);
 		int	nbytes = read(fd, &r, sizeof(t_packet));
 		if (fd > 0 && nbytes > 0 && strncmp(r.command, "AUTH_FAIL", 9) == 0)
 		{

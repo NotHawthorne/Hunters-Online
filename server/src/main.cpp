@@ -17,7 +17,7 @@ void	*player_manager(void *ptr)
 	{
 		for (std::map<std::string, Player *>::iterator it = serv->players.begin(); it != serv->players.end(); ++it)
 		{
-			int ret = it->second->tick();
+			int ret = it->second->tick(serv);
 			if (ret == 2 && it->second->fd > 0)
 				serv->awardKill(it->second);
 			else if (ret == 3)

@@ -1,6 +1,8 @@
 #ifndef PLAYER_H
 # define PLAYER_H
 
+
+class Server;
 # include <map>
 # include <string>
 # include "item.h"
@@ -19,7 +21,7 @@ public:
 	char	pass[16];
 	int		fd;
 	std::map<int, Item *>	inventory;
-	Item	*equip[13];
+	std::map<int, Item *>	equip;
 	Monster	mon;
 	int		gold;
 	int		hunters;
@@ -36,7 +38,7 @@ public:
 	int		exp;
 	int		gold_exponent;
 
-	int		tick();
+	int		tick(Server *s);
 };
 
 #endif

@@ -2,6 +2,7 @@
 # define SERVER_HPP
 
 # include <iostream>
+# include <algorithm>
 # include <stdio.h>
 # include <stdlib.h>
 # include <unistd.h>
@@ -55,6 +56,9 @@ public:
 	int		loadInventories();
 	int		loadInstances();
 	int		respondLogin(int nfd, bool success);
+	int		removeItem(Player *p, Item *i);
+	int		updateEquipment(Player *p);
+	int		loadEquip();
 
 	int								sock;
 	fd_set							active_fd_set;

@@ -122,7 +122,7 @@ void	HeroShell::Client::recvItemList(std::map<int, Item *> *l, t_packet *h)
 		if (read(conn_fd, &p, sizeof(t_packet)) > 0)
 		{
 			Item	*ite = new Item(&p);
-			l->insert(std::pair<int, Item *>(ite->instance_id, ite));
+			l->insert(std::pair<int, Item *>(l->size(), ite));
 			i++;
 		}
 		usleep(5);

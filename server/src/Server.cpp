@@ -43,6 +43,9 @@ Server::Server()
 	std::cout << "Loading inventories...\n";
 	loadInventories();
 	std::cout << "done!\n";
+	std::cout << "Loading equipment\n";
+	loadEquip();
+	std::cout << "Done!\n";
 }
 
 int	Server::notify(Player *p, std::string info)
@@ -79,7 +82,7 @@ int	Server::sqlBackup()
 	for (std::map<std::string, Player *>::iterator it = players.begin(); it != players.end(); ++it)
 	{
 		q += string_format(
-			"UPDATE stats SET gold = %d, hunters = %d, str = %d, intel = %d, dex = %d, hp = %d, max_hp = %d, mana = %d, max_mana = %d, groupid = %d, lvl = %d, exp = %d, gold_exponent = %d WHERE name = \"%s\"; ",
+			"UPDATE stats SET gold = %d, hunters = %d, str = %d, intel = %d, dex = %d, hp = %d, max_hp = %d, mana = %d, max_mana = %d, groupid = %d, lvl = %d, exp = %d, gold_exponent = %d WHERE name = \"%s\" COLLATE NOCASE;",
 			it->second->gold,
 			it->second->hunters,
 			it->second->str,
@@ -158,6 +161,7 @@ Item	*Server::genItem(int level)
 	ni->rarity = rand() % 100;
 	for (int i = 0; i != auras_ && ti->item_type != JUNK; i++)
 	{
+		ta = auras[(rand() % auras.size()) + 1];
 		while (ta->tier > (level % 10) + 1)
 			ta = auras[(rand() % auras.size()) + 1];
 		ni->enchants[i] = ta->id;
@@ -175,12 +179,42 @@ Item	*Server::genItem(int level)
 
 int		Server::grantItem(Player *p, Item *i)
 {
-	p->inventory.insert(std::pair<int, Item *>(p->inventory.size(), i));
+	p->inventory.insert(std::pair<int, Item *>(i->instance_id, i));
 	std::string q = string_format("INSERT INTO inventory(name, id) VALUES (\"%s\", %d);", p->name, i->instance_id);
 	int res = sqlite3_exec(db, q.c_str(), NULL, 0, NULL);
 	if (res != SQLITE_OK)
 		printf("error granting item\n");
 	notify(p, string_format("You've found a %s!", item_bases[i->base_id]->name));
+	return (1);
+}
+
+int		Server::removeItem(Player *p, Item *i)
+{
+	p->inventory.erase(i->instance_id);
+	std::string q = string_format("DELETE FROM inventory WHERE name = \"%s\" AND id = %d;", p->name, i->instance_id);
+	int res = sqlite3_exec(db, q.c_str(), NULL, 0, NULL);
+	if (res != SQLITE_OK)
+		printf("error removing item\n");
+	return (1);
+}
+
+static int	load_equip_callback(void *d, int argc, char **argv, char **colname)
+{
+	if (!argc || !colname)
+		return (1);
+	Server *s = (Server *)d;
+	Player	*p = s->players[std::string(argv[0])];
+
+	for (int i = 1; i != 13; i++)
+		if (std::atoi(argv[i]) > 0)
+			p->equip[p->equip.size()] = s->items[std::atoi(argv[i])];
+	return (0);
+}
+
+int	Server::loadEquip()
+{
+	std::string q("SELECT * FROM equip;");
+	sqlite3_exec(db, q.c_str(), load_equip_callback, (void*)this, NULL);
 	return (1);
 }
 
@@ -229,7 +263,6 @@ static int	playerLoad(void *d, int argc, char **argv, char **colName)
 	std::map<std::string, Player *> *ret = (std::map<std::string, Player *>*)d;
 	Player *pl = new Player();
 	memcpy(pl->name, argv[0], 16);
-	printf("[%s]\n", pl->name);
 	pl->name[strlen(argv[0])] = 0;
 	pl->gold = std::atoi(argv[1]);
 	pl->hunters = std::atoi(argv[2]);
@@ -246,7 +279,6 @@ static int	playerLoad(void *d, int argc, char **argv, char **colName)
 	pl->gold_exponent = std::atoi(argv[13]);
 	pl->fd = -1;
 	ret->insert(std::pair<std::string, Player *>(std::string(argv[0]), pl));
-	printf("[%s]\n", argv[1]);
 	return (0);
 }
 
@@ -348,11 +380,12 @@ int	Server::loadAuras()
 int	Server::newPlayer(t_packet *pack, int nfd)
 {
 	Player	*pl = new Player();
-	std::string	q = string_format("INSERT INTO users (name, pass) VALUES (\"%s\", \"%s\"); INSERT INTO stats (name, gold, hunters, str, intel, dex, hp, max_hp, mana, max_mana, groupid, lvl, exp) VALUES (\"%s\", 100, 1, 10, 10, 10, 100, 100, 100, 100, 0, 1, 0);", pack->id, pack->data[0], pack->id);
+	std::string	q = string_format("INSERT INTO equip(name, head, shoulders, chest, legs, feet, hands, wrists, waist, neck, finger1, finger2, main_hand, off_hand) VALUES (\"%s\", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0); INSERT INTO users (name, pass) VALUES (\"%s\", \"%s\"); INSERT INTO stats (name, gold, hunters, str, intel, dex, hp, max_hp, mana, max_mana, groupid, lvl, exp) VALUES (\"%s\", 100, 1, 10, 10, 10, 100, 100, 100, 100, 0, 1, 0);", pack->id, pack->id, pack->data[0], pack->id);
 
 	int rc = sqlite3_exec(db, q.c_str(), NULL, 0, NULL);
 	if (rc != SQLITE_OK)
-		printf("player creation failed\n");
+		return (printf("player creation failed\n"));
+	respondLogin(nfd, true);
 	memcpy(pl->name, pack->id, 16);
 	memcpy(pl->pass, pack->data[0], 16);
 	pl->fd = nfd;
@@ -420,8 +453,7 @@ int	Server::sendChat(t_packet *pack)
 int	Server::loginRequest(t_packet *pack)
 {
 	int	ret = 0;
-	std::string	q = string_format("SELECT * from users where name = \"%s\" and pass = %s;", pack->id, pack->data[0]);
-	printf("CMP %s %s\n", pack->id, pack->data[0]);
+	std::string	q = string_format("SELECT * from users where name = \"%s\" and pass = %s COLLATE NOCASE;", pack->id, pack->data[0]);
 	sqlite3_exec(db, q.c_str(), verify_callback, (void*)&ret, NULL);
 	return (ret);
 }
@@ -430,15 +462,36 @@ int	Server::respondLogin(int nfd, bool success)
 {
 	t_packet p;
 
-	printf("responding to login...\n");
 	bzero(p.id, 16);
 	bzero(p.command, 16);
 	for (int i = 0; i != 30; i++)
 		bzero(p.data[i], 16);
 	memcpy(p.id, "SERVER", 6);
 	memcpy(p.command, success ? "AUTH_SUCCESS" : "AUTH_FAIL", success ? 12 : 9);
-	printf("%s\n", success ? "succeeded" : "failed");
 	write(nfd, &p, sizeof(t_packet));
+	return (1);
+}
+
+int	Server::updateEquipment(Player *p)
+{
+	std::string	q = string_format("UPDATE equip SET head = %d, shoulders = %d, chest = %d, legs = %d, feet = %d, hands = %d, wrists = %d, waist = %d, neck = %d, finger1 = %d, finger2 = %d, main_hand = %d, off_hand = %d WHERE name = %s;",
+		p->equip[0] ? p->equip[0]->instance_id : 0,
+		p->equip[1] ? p->equip[1]->instance_id : 0,
+		p->equip[2] ? p->equip[2]->instance_id : 0,
+		p->equip[3] ? p->equip[3]->instance_id : 0,
+		p->equip[4] ? p->equip[4]->instance_id : 0,
+		p->equip[5] ? p->equip[5]->instance_id : 0,
+		p->equip[6] ? p->equip[6]->instance_id : 0,
+		p->equip[7] ? p->equip[7]->instance_id : 0,
+		p->equip[8] ? p->equip[8]->instance_id : 0,
+		p->equip[9] ? p->equip[9]->instance_id : 0,
+		p->equip[10] ? p->equip[10]->instance_id : 0,
+		p->equip[11] ? p->equip[11]->instance_id : 0,
+		p->equip[12] ? p->equip[12]->instance_id : 0,
+		p->name);
+	int res = sqlite3_exec(db, q.c_str(), NULL, 0, NULL);
+	if (res != SQLITE_OK)
+		printf("could not update %s's inventory", p->name);
 	return (1);
 }
 
@@ -493,6 +546,29 @@ int	Server::processPacket(t_packet *pack, int nfd)
 		}
 		else
 			notify(p, string_format("User %s is offline.", pack->data[0]));
+		return (1);
+	}
+	else if (cmd.compare("EQUIP") == 0)
+	{
+		Item		*x = items[atoi(pack->data[0])];
+		ItemBase	*y = item_bases[x->base_id];
+		printf("requesting item id %d\n", atoi(pack->data[0]));
+		printf("item base %d\n", x->base_id);
+		if (p->inventory.find(x->instance_id) != p->inventory.end())
+		{
+			if (p->equip[y->slot] != NULL)
+			{
+				grantItem(p, p->equip[y->slot]);
+				removeItem(p, x);
+			}
+			p->equip[y->slot] = x;
+			sendItemList(p, &p->inventory, 0);
+			sendItemList(p, &p->equip, 1);
+			sendStatus(p);
+			notify(p, string_format("You've equipped %s", y->name));
+		}
+		else
+			printf("couldn't find\n");
 		return (1);
 	}
 	else
