@@ -20,10 +20,12 @@ int	Player::tick(Server *s)
 	}
 	if (fd <= 0)
 		return (1);
+	printf("%zu\n", equip.size());
 	for (std::map<int, Item *>::iterator it = equip.begin(); it != equip.end(); ++it)
 	{
 		for (int i = 0; i != 5; i++)
 		{
+			printf("%s (%d)\n", EffectStrings[it->second->enchants[i]], it->second->scale[i]);
 			if (it->second->enchants[i] == PHYS_DMG)
 				dmg += it->second->scale[i];
 			else if (it->second->enchants[i] == STR)
@@ -49,6 +51,7 @@ int	Player::tick(Server *s)
 	if (mon.hp > 0 && fd > 0)
 	{
 		mon.hp -= dmg + ((str + strbuff) / 2);
+		s->notify(this, string_format("You deal %d damage to the monsters!", dmg + ((str + strbuff) / 2)));
 		hp -= (mon.dmg - (armor_mit / 20)) - lifesteal_amt;
 	}
 	else

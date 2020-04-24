@@ -22,6 +22,23 @@ enum	Effects
 	HEALTH
 };
 
+static char	*EffectStrings[14] = {
+	"none",
+	"phys damage",
+	"atk spd",
+	"crit chance",
+	"crit mult",
+	"int",
+	"str",
+	"dex",
+	"lifesteal",
+	"stun",
+	"chain lightning",
+	"poison",
+	"heal",
+	"health" 
+};
+
 class	Aura {
 public:
 	int		id;

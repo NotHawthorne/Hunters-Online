@@ -525,6 +525,7 @@ int	Server::processPacket(t_packet *pack, int nfd)
 			p->fd = nfd;
 			sendStatus(p);
 			sendItemList(p, &p->inventory, 0);
+			sendItemList(p, &p->equip, 0);
 			notify(p, string_format("[MOTD] %s", MOTD));
 			return (1);
 		}
