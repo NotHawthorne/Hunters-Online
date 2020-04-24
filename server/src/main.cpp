@@ -22,12 +22,14 @@ void	*player_manager(void *ptr)
 				serv->awardKill(it->second);
 			else if (ret == 3)
 				serv->notify(it->second, std::string("You have died and lost half of your total experience."));
-			if (FD_ISSET(it->second->fd, &serv->active_fd_set) && serv->sendStatus(it->second) <= 0)
+			
+			else if (FD_ISSET(it->second->fd, &serv->active_fd_set) && ret == -1)
 			{
 				printf("REMOVING PLAYER\n");
 				serv->removePlayer(it->second);
 				FD_CLR(it->second->fd, &serv->active_fd_set);
 				close(it->second->fd);
+				it->second->fd = -1;
 				printf("DONE\n");
 			}
 		}

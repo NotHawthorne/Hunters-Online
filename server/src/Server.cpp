@@ -50,21 +50,22 @@ Server::Server()
 
 int	Server::notify(Player *p, std::string info)
 {
-	t_packet	pa;
+	t_packet	*pa = new t_packet;
 	const char	*d;
 	int			x = 1;
 	std::string	s = std::to_string(info.size());
 
-	memcpy(pa.id, "SERVER\0", 7);
-	memcpy(pa.command, "NOTIFY\0", 7);
+	memcpy(pa->id, "SERVER\0", 7);
+	memcpy(pa->command, "NOTIFY\0", 7);
 	d = info.c_str();
-	memcpy(pa.data[0], s.c_str(), s.size() + 1);
+	memcpy(pa->data[0], s.c_str(), s.size() + 1);
 	for (int i = 0; i < (int)info.size(); i+= 15)
 	{
-		bzero(pa.data[x], 16);
-		memcpy(pa.data[x++], d + i, info.size() - i > 15 ? 15 : info.size() - i);
+		bzero(pa->data[x], 16);
+		memcpy(pa->data[x++], d + i, info.size() - i > 15 ? 15 : info.size() - i);
 	}
-	write(p->fd, &pa, sizeof(t_packet));
+	p->packet_queue->push(pa);
+	//write(p->fd, &pa, sizeof(t_packet));
 	return (1);
 }
 
@@ -123,37 +124,39 @@ int	Server::sqlBackup()
 
 int	Server::sendItemList(Player *p, std::map<int, Item *> *list, int type)
 {
-	t_packet	header;
+	t_packet	*header = new t_packet;
 
-	memcpy(header.id, "SERVER\0", 7);
-	memcpy(header.command, "ILIST_HEAD\0", 11);
-	bzero(header.data[0], 16);
-	bzero(header.data[1], 16);
-	memcpy(header.data[0], std::to_string(list->size()).c_str(), std::to_string(list->size()).size());
-	memcpy(header.data[1], std::to_string(type).c_str(), std::to_string(type).size());
-	write(p->fd, &header, sizeof(t_packet));
+	memcpy(header->id, "SERVER\0", 7);
+	memcpy(header->command, "ILIST_HEAD\0", 11);
+	bzero(header->data[0], 16);
+	bzero(header->data[1], 16);
+	memcpy(header->data[0], std::to_string(list->size()).c_str(), std::to_string(list->size()).size());
+	memcpy(header->data[1], std::to_string(type).c_str(), std::to_string(type).size());
+	p->packet_queue->push(header);
+	//write(p->fd, &header, sizeof(t_packet));
 	for (std::map<int, Item *>::iterator it = list->begin(); it != list->end(); ++it)
 	{
-		t_packet	pa;
-		memcpy(pa.id, "SERVER\0", 7);
-		memcpy(pa.command, "ITEM\0", 5);
+		t_packet	*pa = new t_packet;
+		memcpy(pa->id, "SERVER\0", 7);
+		memcpy(pa->command, "ITEM\0", 5);
 		for (int i = 0; i != 15; i++)
-			bzero(pa.data[i], 16);
-		memcpy(pa.data[0], std::to_string(it->second->instance_id).c_str(), std::to_string(it->second->instance_id).size());
-		memcpy(pa.data[1], std::to_string(it->second->base_id).c_str(), std::to_string(it->second->base_id).size());
-		memcpy(pa.data[2], std::to_string(it->second->rarity).c_str(), std::to_string(it->second->rarity).size());
-		memcpy(pa.data[3], std::to_string(it->second->enchants[0]).c_str(), std::to_string(it->second->enchants[0]).size());
-		memcpy(pa.data[4], std::to_string(it->second->enchants[1]).c_str(), std::to_string(it->second->enchants[1]).size());
-		memcpy(pa.data[5], std::to_string(it->second->enchants[2]).c_str(), std::to_string(it->second->enchants[2]).size());
-		memcpy(pa.data[6], std::to_string(it->second->enchants[3]).c_str(), std::to_string(it->second->enchants[3]).size());
-		memcpy(pa.data[7], std::to_string(it->second->enchants[4]).c_str(), std::to_string(it->second->enchants[4]).size());
-		memcpy(pa.data[8], std::to_string(it->second->scale[0]).c_str(), std::to_string(it->second->scale[0]).size());
-		memcpy(pa.data[9], std::to_string(it->second->scale[1]).c_str(), std::to_string(it->second->scale[1]).size());
-		memcpy(pa.data[10], std::to_string(it->second->scale[2]).c_str(), std::to_string(it->second->scale[2]).size());
-		memcpy(pa.data[11], std::to_string(it->second->scale[3]).c_str(), std::to_string(it->second->scale[3]).size());
-		memcpy(pa.data[12], std::to_string(it->second->scale[4]).c_str(), std::to_string(it->second->scale[4]).size());
-		bzero(pa.data[13], 16);
-		write(p->fd, &pa, sizeof(t_packet));
+			bzero(pa->data[i], 16);
+		memcpy(pa->data[0], std::to_string(it->second->instance_id).c_str(), std::to_string(it->second->instance_id).size());
+		memcpy(pa->data[1], std::to_string(it->second->base_id).c_str(), std::to_string(it->second->base_id).size());
+		memcpy(pa->data[2], std::to_string(it->second->rarity).c_str(), std::to_string(it->second->rarity).size());
+		memcpy(pa->data[3], std::to_string(it->second->enchants[0]).c_str(), std::to_string(it->second->enchants[0]).size());
+		memcpy(pa->data[4], std::to_string(it->second->enchants[1]).c_str(), std::to_string(it->second->enchants[1]).size());
+		memcpy(pa->data[5], std::to_string(it->second->enchants[2]).c_str(), std::to_string(it->second->enchants[2]).size());
+		memcpy(pa->data[6], std::to_string(it->second->enchants[3]).c_str(), std::to_string(it->second->enchants[3]).size());
+		memcpy(pa->data[7], std::to_string(it->second->enchants[4]).c_str(), std::to_string(it->second->enchants[4]).size());
+		memcpy(pa->data[8], std::to_string(it->second->scale[0]).c_str(), std::to_string(it->second->scale[0]).size());
+		memcpy(pa->data[9], std::to_string(it->second->scale[1]).c_str(), std::to_string(it->second->scale[1]).size());
+		memcpy(pa->data[10], std::to_string(it->second->scale[2]).c_str(), std::to_string(it->second->scale[2]).size());
+		memcpy(pa->data[11], std::to_string(it->second->scale[3]).c_str(), std::to_string(it->second->scale[3]).size());
+		memcpy(pa->data[12], std::to_string(it->second->scale[4]).c_str(), std::to_string(it->second->scale[4]).size());
+		bzero(pa->data[13], 16);
+		p->packet_queue->push(pa);
+		//write(p->fd, &pa, sizeof(t_packet));
 	}
 	return (1);
 }
@@ -423,7 +426,7 @@ int	Server::newPlayer(t_packet *pack, int nfd)
 
 int	Server::sendStatus(Player *p)
 {
-	t_packet	pack;
+	t_packet	*pack = new t_packet;
 	std::string	g = std::to_string(p->gold);
 	std::string h = std::to_string(p->hunters);
 	std::string	_str = std::to_string(p->str);
@@ -438,30 +441,35 @@ int	Server::sendStatus(Player *p)
 	std::string _exp = std::to_string(p->exp);
 	std::string _gold_exponent = std::to_string(p->gold_exponent);
 
-	memcpy(pack.id, "SERVER", 7);
-	memcpy(pack.command, "STATUS", 7);
-	memcpy(pack.data[0], g.c_str(), strlen(g.c_str()) + 1);
-	memcpy(pack.data[1], h.c_str(), strlen(h.c_str()) + 1);
-	memcpy(pack.data[2], _str.c_str(), _str.size() + 1);
-	memcpy(pack.data[3], _intel.c_str(), _intel.size() + 1);
-	memcpy(pack.data[4], _dex.c_str(), _dex.size() + 1);
-	memcpy(pack.data[5], _hp.c_str(), _hp.size() + 1);
-	memcpy(pack.data[6], _max_hp.c_str(), _max_hp.size() + 1);
-	memcpy(pack.data[7], _mana.c_str(), _mana.size() + 1);
-	memcpy(pack.data[8], _max_mana.c_str(), _max_mana.size() + 1);
-	memcpy(pack.data[9], _groupid.c_str(), _groupid.size() + 1);
-	memcpy(pack.data[10], _lvl.c_str(), _lvl.size() + 1);
-	memcpy(pack.data[11], _exp.c_str(), _exp.size() + 1);
-	memcpy(pack.data[12], _gold_exponent.c_str(), _gold_exponent.size() + 1);
-	if (write(p->fd, &pack, sizeof(t_packet)) <= 0)
-		printf("error writing to fd: %d\n", p->fd);
-	return (write(p->fd, &pack, sizeof(t_packet)));
+	memcpy(pack->id, "SERVER", 7);
+	memcpy(pack->command, "STATUS", 7);
+	memcpy(pack->data[0], g.c_str(), strlen(g.c_str()) + 1);
+	memcpy(pack->data[1], h.c_str(), strlen(h.c_str()) + 1);
+	memcpy(pack->data[2], _str.c_str(), _str.size() + 1);
+	memcpy(pack->data[3], _intel.c_str(), _intel.size() + 1);
+	memcpy(pack->data[4], _dex.c_str(), _dex.size() + 1);
+	memcpy(pack->data[5], _hp.c_str(), _hp.size() + 1);
+	memcpy(pack->data[6], _max_hp.c_str(), _max_hp.size() + 1);
+	memcpy(pack->data[7], _mana.c_str(), _mana.size() + 1);
+	memcpy(pack->data[8], _max_mana.c_str(), _max_mana.size() + 1);
+	memcpy(pack->data[9], _groupid.c_str(), _groupid.size() + 1);
+	memcpy(pack->data[10], _lvl.c_str(), _lvl.size() + 1);
+	memcpy(pack->data[11], _exp.c_str(), _exp.size() + 1);
+	memcpy(pack->data[12], _gold_exponent.c_str(), _gold_exponent.size() + 1);
+	p->packet_queue->push(pack);
+	//if (write(p->fd, &pack, sizeof(t_packet)) <= 0)
+		//printf("error writing to fd: %d\n", p->fd);
+	return (1);
 }
 
 int	Server::sendChat(t_packet *pack)
 {
 	for (std::map<std::string, Player *>::iterator it = players.begin(); it != players.end(); ++it)
-		write(it->second->fd, pack, sizeof(t_packet));
+	{
+		t_packet *p = new t_packet;
+		memcpy(p, &(*pack), sizeof(t_packet));
+		it->second->packet_queue->push(p);
+	}
 	return (1);
 }
 
@@ -483,6 +491,7 @@ int	Server::respondLogin(int nfd, bool success)
 		bzero(p.data[i], 16);
 	memcpy(p.id, "SERVER", 6);
 	memcpy(p.command, success ? "AUTH_SUCCESS" : "AUTH_FAIL", success ? 12 : 9);
+	
 	write(nfd, &p, sizeof(t_packet));
 	return (1);
 }
@@ -524,7 +533,6 @@ int	Server::processPacket(t_packet *pack, int nfd)
 			p->gold -= (100 * amt);
 			p->hunters += amt;
 		}
-		sendStatus(p);
 		return (1);
 	}
 	else if (cmd.compare("CHAT") == 0)
@@ -540,7 +548,7 @@ int	Server::processPacket(t_packet *pack, int nfd)
 			p->fd = nfd;
 			sendStatus(p);
 			sendItemList(p, &p->inventory, 0);
-			sendItemList(p, &p->equip, 0);
+			sendItemList(p, &p->equip, 1);
 			notify(p, string_format("[MOTD] %s", MOTD));
 			return (1);
 		}
@@ -557,8 +565,14 @@ int	Server::processPacket(t_packet *pack, int nfd)
 			notify(p, "You whisper to yourself for a while, hoping nobody notices. What a strange thing to do.");
 		else if (players.find(std::string(pack->data[0])) != players.end() && players[std::string(pack->data[0])]->fd > 0)
 		{
-			write(players[std::string(pack->data[0])]->fd, &(*pack), sizeof(t_packet));
-			write(nfd, &(*pack), sizeof(t_packet));
+			t_packet	*a = new t_packet;
+			t_packet	*b = new t_packet;
+			memcpy(a, &(*pack), sizeof(t_packet));
+			memcpy(b, &(*pack), sizeof(t_packet));
+			players[std::string(pack->data[0])]->packet_queue->push(a);
+			p->packet_queue->push(b);
+			//write(players[std::string(pack->data[0])]->fd, &(*pack), sizeof(t_packet));
+			//write(nfd, &(*pack), sizeof(t_packet));
 		}
 		else
 			notify(p, string_format("User %s is offline.", pack->data[0]));

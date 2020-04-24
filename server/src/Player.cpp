@@ -77,5 +77,16 @@ int	Player::tick(Server *s)
 		mana += intel + intbuff;
 	if (hp > max_hp)
 		hp = max_hp;
-	return (1);
+	s->sendStatus(this);
+	return (packet_queue->send(fd));
+}
+
+Player::Player()
+{
+	packet_queue = new PacketQueue();
+}
+
+Player::~Player()
+{
+	delete packet_queue;
 }

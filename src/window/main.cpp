@@ -2,6 +2,8 @@
 #include "../../includes/client.h"
 #include "../../includes/login.h"
 
+# define DEBUG 1
+
 extern HeroShell::Screen *mainscr;
 
 int		unpad(char *str)
@@ -22,6 +24,8 @@ void	*listener(void *ptr)
 	{
 		if (read(d->cli->conn_fd, &p, sizeof(t_packet)) > 0)
 		{
+			if (DEBUG == 1)
+				wprintw(d->scr->log, "recieved: %s\n", p.command);
 			if (strcmp(p.command, "STATUS") == 0)
 				d->scr->update(&p);
 			else if (strcmp(p.command, "CHAT") == 0 ||

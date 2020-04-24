@@ -31,6 +31,7 @@ public:
 	int		fd;
 	std::map<int, Item *>	inventory;
 	std::map<int, Item *>	equip;
+	PacketQueue	*packet_queue;
 	Monster	mon;
 	int		gold;
 	int		hunters;
@@ -50,6 +51,9 @@ public:
 	int		area;
 
 	int		tick(Server *s);
+
+	Player();
+	~Player();
 };
 
 #endif
