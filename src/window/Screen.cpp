@@ -4,41 +4,86 @@ HeroShell::Screen	*mainscr;
 
 HeroShell::Screen::Screen()
 {
-	int	r,c;
-
+	// Init
 	initscr();
+	refresh();
 	raw();
 	noecho();
 	cbreak();
+
+	// Turn off cursor
+	curs_set(0);
+
+	// Set up colors
 	start_color();
 	init_pair(1, COLOR_WHITE, COLOR_BLACK);
 	init_pair(2, COLOR_MAGENTA, COLOR_BLACK);
 	init_pair(3, COLOR_YELLOW, COLOR_BLACK);
-	curs_set(0);
+
+	// Call scr_refresh on screen resize signal
 	signal(SIGWINCH, scr_refresh);
-	display = newwin(LINES * 0.75, COLS * 0.75, 0, 0);
-	display_port = newwin((LINES * 0.75 - 2), (COLS * 0.75) - 2, 1, 1);
-	console = newwin(LINES * 0.25, COLS, LINES * 0.75, 0);
-	log = newwin((LINES * 0.25) - 2, COLS - 2, (LINES*0.75) + 1, 1);
-	info = newwin(LINES * 0.75, COLS * 0.25, 0, COLS * 0.75);
+
+	// Set up the windows
+	createWindows(LINES, COLS);
+}
+
+void HeroShell::Screen::createWindows(int lines, int cols)
+{
+	int	display_width;
+	int	display_height;
+	int	console_width;
+	int	console_height;
+	int	info_width;
+	int	info_height;
+	int	log_width;
+	int	log_height;
+
+	// Variables for controlling window splits
+	display_width = cols * 0.75;
+	display_height = lines * 0.75;
+	console_width = display_width;
+	console_height = lines - display_height;
+	info_width = cols - display_width;
+	info_height = 12;
+	log_width = info_width;
+	log_height = lines - info_height;
+
+	// Window definitions
+	display_box = newwin(display_height, display_width, 0, 0);
+	display = derwin(display_box, display_height - 2, display_width - 2, 1, 1);
+	console = newwin(console_height, console_width, display_height, 0);
+	chat = newwin(console_height - 3, console_width - 2, display_height + 1, 1);
+	log_box = newwin(log_height, log_width, 0, display_width);
+	log = newwin((log_height) - 2, log_width - 2, 1, display_width + 1);
+	info = newwin(info_height, info_width, log_height, display_width);
+
+	// Let log and chat scroll
 	scrollok(log, TRUE);
-	input[0] = new_field(1, COLS - 2, 1, 1, 0, 0);
+	scrollok(chat, TRUE);
+
+	// Set up and position the input field
+	input[0] = new_field(1, display_width - 2, 1, 1, 0, 0);
 	set_field_opts(input[0], O_VISIBLE | O_PUBLIC | O_EDIT | O_ACTIVE);
 	input[1] = NULL;
 	form = new_form(input);
-	scale_form(form, &r, &c);
+	scale_form(form, &lines, &cols);
 	set_form_win(form, console);
-	set_form_sub(form, derwin(console, r, c, (LINES / 4) - 3, 0));
+	set_form_sub(form, derwin(console, lines, cols, console_height - 3, 0));
 	post_form(form);
 
 	form_driver(form, '>');
-	box(display, ':', '*');
-	box(console, ':', '*');
-	box(info, ':', '*');
+
+	// Draw boxes around boxes
+	box(display_box, 0, 0);
+	box(console, 0, 0);
+	box(log_box, 0, 0);
+	box(info, 0, 0);
+
+	// Refresh the windows
 	refresh();
-	wrefresh(display);
-	wrefresh(display_port);
+	wrefresh(display_box);
 	wrefresh(console);
+	wrefresh(log_box);
 	wrefresh(info);
 }
 
@@ -108,11 +153,18 @@ HeroShell::Screen::~Screen()
 	wborder(display, ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ');
 	wborder(console, ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ');
 	wborder(info, ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ');
+	wborder(log_box, ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ');
 	wrefresh(display);
 	wrefresh(console);
+	wrefresh(chat);
+	wrefresh(log_box);
+	wrefresh(log);
 	wrefresh(info);
 	delwin(display);
 	delwin(console);
+	delwin(chat);
+	delwin(log_box);
+	delwin(log);
 	delwin(info);
 	curs_set(1);
 	endwin();

@@ -19,10 +19,15 @@ namespace HeroShell
 		public:
 			Screen();
 			~Screen();
-			WINDOW	*console;
-			WINDOW	*log;
+
+			void	createWindows(int lines, int cols);
+
+			WINDOW	*display_box;
 			WINDOW	*display;
-			WINDOW	*display_port;
+			WINDOW	*console;
+			WINDOW	*chat;
+			WINDOW	*log_box;
+			WINDOW	*log;
 			WINDOW	*info;
 			FIELD	*input[2];
 			FORM	*form;

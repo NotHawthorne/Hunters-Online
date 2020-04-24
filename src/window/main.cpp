@@ -31,12 +31,22 @@ void	*listener(void *ptr)
 				int a = atoi(p.data[0]);
 				int res = strcmp(p.command, "NOTIFY");
 				
-				wattron(d->scr->log, COLOR_PAIR(res ? 1 : 3));
 				for (int i = 1; i < 30 && st.size() < a; i++)
 					st += std::string(p.data[i]);
-				wprintw(d->scr->log, "%s: %s\n", p.id, st.c_str());
-				wattron(d->scr->log, COLOR_PAIR(1));
-				wrefresh(d->scr->log);
+				if (strcmp(p.id, "SERVER") == 0)
+				{
+					wattron(d->scr->log, COLOR_PAIR(res ? 1 : 3));
+					wprintw(d->scr->log, "%s\n", st.c_str());
+					wattron(d->scr->log, COLOR_PAIR(1));
+					wrefresh(d->scr->log);
+				}
+				else
+				{
+					wattron(d->scr->chat, COLOR_PAIR(res ? 1 : 3));
+					wprintw(d->scr->chat, "%s: %s\n", p.id, st.c_str());
+					wattron(d->scr->chat, COLOR_PAIR(1));
+					wrefresh(d->scr->chat);
+				}
 			}
 			else if (strcmp(p.command, "ILIST_HEAD") == 0)
 			{
@@ -48,7 +58,7 @@ void	*listener(void *ptr)
 						if (d->cli->state != INVENTORY)
 							break ;
 						d->cli->last_state = -1;
-						d->cli->updateDisplay(d->scr->display_port, INVENTORY);
+						d->cli->updateDisplay(d->scr->display, INVENTORY);
 						break ;
 					case 1:
 						d->cli->equipment.clear();
@@ -67,17 +77,17 @@ void	*listener(void *ptr)
 				std::string	msg(p.data[2]);
 				for (int i = 3; p.data[i][0]; i++)
 					msg += std::string(p.data[i]);
-				wattron(d->scr->log, COLOR_PAIR(2));
-				wprintw(d->scr->log, "%s %s: %s\n",
+				wattron(d->scr->chat, COLOR_PAIR(2));
+				wprintw(d->scr->chat, "%s %s: %s\n",
 						strcmp(p.id, d->cli->name) ? "from" : "to",
 						strcmp(p.id, d->cli->name) ? p.id : p.data[0], msg.c_str());
-				wattron(d->scr->log, COLOR_PAIR(1));
-				wrefresh(d->scr->log);
+				wattron(d->scr->chat, COLOR_PAIR(1));
+				wrefresh(d->scr->chat);
 			}
 			else
 				wprintw(d->scr->log, "Unhandled msg: %s by %s\n", p.id, p.command);
 		}
-		d->cli->updateDisplay(d->scr->display_port, d->cli->state);
+		d->cli->updateDisplay(d->scr->display, d->cli->state);
 		usleep(50);
 	}
 	return (NULL);
@@ -122,7 +132,7 @@ int		parse(char *str, HeroShell::Client *cli, HeroShell::Screen *scr)
 		if (desire.compare("inventory") == 0)
 		{
 			cli->state = INVENTORY;
-			cli->updateDisplay(scr->display_port, INVENTORY);
+			cli->updateDisplay(scr->display, INVENTORY);
 			for (std::map<int, Item *>::iterator it = cli->inventory.begin(); it != cli->inventory.end(); ++it)
 			{
 				wprintw(scr->log, "%d - %s\n", x, cli->item_base[it->second->base_id]->name);
@@ -141,7 +151,7 @@ int		parse(char *str, HeroShell::Client *cli, HeroShell::Screen *scr)
 			}
 
 			cli->state = EQUIPMENT;
-			cli->updateDisplay(scr->display_port, EQUIPMENT);
+			cli->updateDisplay(scr->display, EQUIPMENT);
 			for (std::map<int, Item *>::iterator it_eq = cli->equipment.begin(); \
 				it_eq != cli->equipment.end(); it_eq++)
 			{
@@ -164,10 +174,6 @@ int		parse(char *str, HeroShell::Client *cli, HeroShell::Screen *scr)
 		for (int i = 3; i < tokens.size(); i++)
 			msg = msg + " " + tokens[i];
 		cli->sendChat((char*)msg.c_str(), msg.size(), 1, (char*)dest.c_str());
-		//wattron(scr->log, COLOR_PAIR(2));
-		//wprintw(scr->log, "to %s: %s\n", dest.c_str(), msg.c_str());
-		//wattron(scr->log, COLOR_PAIR(1));
-		//wrefresh(scr->log);
 		return (1);
 	}
 	else if (cmd.compare(std::string("page")) == 0)
@@ -180,7 +186,7 @@ int		parse(char *str, HeroShell::Client *cli, HeroShell::Screen *scr)
 			cli->inven_page = std::atoi(tokens[1].c_str()) - 1;
 			if (cli->state == INVENTORY)
 				cli->last_state = -1;
-			cli->updateDisplay(scr->display_port, cli->state);
+			cli->updateDisplay(scr->display, cli->state);
 		}
 		return (1);
 	}
@@ -190,7 +196,7 @@ int		parse(char *str, HeroShell::Client *cli, HeroShell::Screen *scr)
 			return (0);
 		cli->inspect_slot = std::atoi(tokens[1].c_str());
 		cli->last_state = -1;
-		cli->updateDisplay(scr->display_port, INSPECT);
+		cli->updateDisplay(scr->display, INSPECT);
 		return (1);
 	}
 	else if (cmd.compare(std::string("einspect")) == 0)
@@ -199,7 +205,7 @@ int		parse(char *str, HeroShell::Client *cli, HeroShell::Screen *scr)
 			return (0);
 		cli->inspect_slot = std::atoi(tokens[1].c_str());
 		cli->last_state = -1;
-		cli->updateDisplay(scr->display_port, EINSPECT);
+		cli->updateDisplay(scr->display, EINSPECT);
 		return (1);
 	}
 	else if (cmd.compare(std::string("equip")) == 0)
