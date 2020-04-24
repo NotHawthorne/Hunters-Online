@@ -6,7 +6,8 @@ all: $(NAME)
 MODULES := src/window src/client includes
 LIBDIRS := 
 LIBS := -lncurses -lform -lpthread -lsqlite3
-CFLAGS := -Iincludes -Wall -Werror -Wextra 
+#CXXFLAGS := -Iincludes -Wall -Werror -Wextra -g
+CXXFLAGS := -Iincludes -g
 MODNAME := module.mk
 SRC :=
 
@@ -18,11 +19,11 @@ DEP :=	$(patsubst %.cpp,%.d,$(filter %.cpp,$(SRC)))
 -include $(DEP)
 
 $(NAME): $(OBJ)
-	@$(CC) $(CFLAGS) $(OBJ) $(LIBS) -o $@
+	@$(CC) $(CXXFLAGS) $(OBJ) $(LIBS) -o $@
 
 %.d : %.c
-	@./depend.sh $*.o $(CFLAGS) $< > $@
-	@printf '\t%s' "$(CC) $(CFLAGS) -c -o $*.o $<" >> $@
+	@./depend.sh $*.o $(CXXFLAGS) $< > $@
+	@printf '\t%s' "$(CC) $(CXXFLAGS) -c -o $*.o $<" >> $@
 	@echo $@ >> all.log
 
 clean:
