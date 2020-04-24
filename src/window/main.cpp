@@ -203,6 +203,7 @@ int		parse(char *str, HeroShell::Client *cli, HeroShell::Screen *scr)
 			return (0);
 		cli->inspect_slot = std::atoi(tokens[1].c_str());
 		cli->last_state = -1;
+		cli->state = INSPECT;
 		cli->updateDisplay(scr->display, INSPECT);
 		return (1);
 	}
@@ -212,6 +213,7 @@ int		parse(char *str, HeroShell::Client *cli, HeroShell::Screen *scr)
 			return (0);
 		cli->inspect_slot = std::atoi(tokens[1].c_str());
 		cli->last_state = -1;
+		cli->state = EINSPECT;
 		cli->updateDisplay(scr->display, EINSPECT);
 		return (1);
 	}

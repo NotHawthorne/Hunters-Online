@@ -34,7 +34,7 @@ int	HeroShell::Client::updateDisplay(WINDOW *win, int new_state)
 			wprintw(win, WELCOME_MSG);
 			break ;
 		case EQUIPMENT:
-			wprintw(win, "equipment (%d/12):\n", equipment.size());
+			wprintw(win, "equipment (%d/13):\n", equipment.size());
 			while (x < equipment.size())
 			{
 				wprintw(win, "%-8d -- %s\n", x, item_base[it_eq->second->base_id]->name);

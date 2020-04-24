@@ -95,7 +95,7 @@ enum	Item_Slots
 	OFF_HAND
 };
 
-static char	*Item_Slot_String[12] = {
+static char	*Item_Slot_String[13] = {
 	"Head",
 	"Shoulders",
 	"Chest",
@@ -103,6 +103,7 @@ static char	*Item_Slot_String[12] = {
 	"Feet",
 	"Hands",
 	"Wrists",
+	"Waist",
 	"Neck",
 	"Finger1",
 	"Finger2",
