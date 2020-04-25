@@ -59,6 +59,7 @@ public:
 	int		removeItem(Player *p, Item *i);
 	int		updateEquipment(Player *p);
 	int		loadEquip();
+	int		sendPlayerList(t_packet *pack, Player *p);
 
 	int								sock;
 	fd_set							active_fd_set;

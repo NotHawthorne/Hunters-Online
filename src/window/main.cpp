@@ -62,6 +62,14 @@ void	*listener(void *ptr)
 					wrefresh(d->scr->chat);
 				}
 			}
+			else if (strcmp(p->command, "PLIST_HEAD") == 0)
+			{
+				d->cli->plist.clear();
+				d->cli->recvUserList(&d->cli->plist, p);
+				d->cli->last_state = -1;
+				d->cli->state = PLAYERS;
+				d->cli->updateDisplay(d->scr->display, PLAYERS);
+			}
 			else if (strcmp(p->command, "ILIST_HEAD") == 0)
 			{
 				switch (atoi(p->data[1]))
@@ -266,6 +274,20 @@ int		parse(char *str, HeroShell::Client *cli, HeroShell::Screen *scr)
 		else
 			wprintw(scr->log, "available commands:\nbuy, inspect, message [pm/tell/whisper], view\n"); 
 		wrefresh(scr->log);
+		return (1);
+	}
+	else if (cmd.compare(std::string("players")) == 0)
+	{
+		t_packet	np;
+
+		bzero(np.id, 16);
+		bzero(np.command, 16);
+		bzero(np.data[0], 16);
+		bzero(np.data[1], 16);
+		memcpy(np.command, "REQ_PLAYERS", 11);
+		memcpy(np.id, cli->name, strlen(cli->name));
+		memcpy(np.data[0], std::to_string(((LINES * 0.75) - 3) * cli->player_page).c_str(), std::to_string(((LINES * 0.75) - 3) * cli->player_page).size());
+		write(cli->conn_fd, &np, sizeof(t_packet));
 		return (1);
 	}
 	return (0);

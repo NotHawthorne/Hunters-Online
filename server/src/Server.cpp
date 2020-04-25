@@ -519,6 +519,40 @@ int	Server::updateEquipment(Player *p)
 	return (1);
 }
 
+static t_packet	*createPacket(char *id, char *command)
+{
+	t_packet	*p = new t_packet;
+	for (int i = 0; i != 30; i++)
+		bzero(p->data[i], 16);
+	bzero(p->id, 16);
+	bzero(p->command, 16);
+	memcpy(p->id, id, strlen(id));
+	memcpy(p->command, command, strlen(command));
+	return (p);
+}
+
+int	Server::sendPlayerList(t_packet *pack, Player *p)
+{
+	int amt = atoi(pack->data[0]);
+	if (amt < 0)
+		return (0);
+	t_packet	*header = createPacket("SERVER", "PLIST_HEAD");
+	int	amt_send = amt + 25 > players.size() ? players.size() % 25 : 25;
+	memcpy(header->data[0], std::to_string(amt_send).c_str(), std::to_string(amt_send).size());
+	int	x = 0;
+	p->packet_queue->push(header);
+	auto iter = players.begin();
+	std::advance(iter, amt);
+	for (std::map<std::string, Player *>::iterator it = players.begin(); it != players.end() && x < amt_send; ++it)
+	{
+		t_packet	*pa = createPacket(it->second->name, "PLAYER");
+		memcpy(pa->data[0], std::to_string(it->second->lvl).c_str(), std::to_string(it->second->lvl).size());
+		p->packet_queue->push(pa);
+		x++;
+	}
+	return (1);
+}
+
 int	Server::processPacket(t_packet *pack, int nfd)
 {
 	std::string	plr(pack->id);
@@ -538,6 +572,11 @@ int	Server::processPacket(t_packet *pack, int nfd)
 	else if (cmd.compare("CHAT") == 0)
 	{
 		sendChat(pack);
+		return (1);
+	}
+	else if (cmd.compare("REQ_PLAYERS") == 0)
+	{
+		sendPlayerList(pack, p);
 		return (1);
 	}
 	else if (cmd.compare("REQ_LOGIN") == 0)
@@ -580,6 +619,8 @@ int	Server::processPacket(t_packet *pack, int nfd)
 	}
 	else if (cmd.compare("EQUIP") == 0)
 	{
+		if (atoi(pack->data[0]) <= 0)
+			return (1);
 		Item		*x = items[atoi(pack->data[0])];
 		ItemBase	*y = item_bases[x->base_id];
 		printf("requesting item id %d\n", atoi(pack->data[0]));

@@ -19,7 +19,8 @@
 #include "window.h"
 #include "packet.h"
 
-#define ADDRESS "64.225.45.59"
+#define _ADDRESS "64.225.45.59"
+#define ADDRESS "127.0.0.1"
 #define PORT 4242
 
 enum display_states
@@ -29,7 +30,15 @@ enum display_states
 	INVENTORY,
 	EQUIPMENT,
 	INSPECT,
-	EINSPECT
+	EINSPECT,
+	PLAYERS
+};
+
+class Player {
+public:
+	char	name[16];
+	int		level;
+	Player(t_packet *p);
 };
 
 namespace HeroShell
@@ -44,18 +53,21 @@ namespace HeroShell
 		int	initDB();
 		void	recvItemList(std::map<int, Item *> *l, t_packet *h);
 		int	updateDisplay(WINDOW *win, int new_state);
+		void	recvUserList(std::map<int, Player *> *l, t_packet *h);
 
 		sqlite3					*db;
 		std::map<int, Item *>	inventory;
 		std::map<int, Item *>	equipment;
 		std::map<int, ItemBase *>	item_base;
 		std::map<int, Aura *>		auras;
+		std::map<int, Player *>		plist;
 		int					state;
 		int					last_state;
 		bool				eq_empty;
 		bool				inven_empty;
 		int					inven_page;
 		int					inspect_slot;
+		int					player_page;
 		int					conn_fd;
 		struct sockaddr_in	server_addr;
 		char				name[16];

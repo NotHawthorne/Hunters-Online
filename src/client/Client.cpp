@@ -25,6 +25,7 @@ int	HeroShell::Client::updateDisplay(WINDOW *win, int new_state)
 	wclear(win);
 	wrefresh(win);
 	auto ite = inventory.begin();
+	auto pit = plist.begin();
 	std::map<int, Item *>::iterator it_eq = equipment.begin();
 	int x = 0;
 	int n = ((LINES * 0.75) - 3) * inven_page;
@@ -109,6 +110,13 @@ int	HeroShell::Client::updateDisplay(WINDOW *win, int new_state)
 			for (int i = 0; i < 5 && ite->second->enchants[i]; i++)
 				wprintw(win, "%s (%d)\n", EffectStrings[auras[ite->second->enchants[i]]->enchant], ite->second->scale[i]);
 			break ;
+		case PLAYERS:
+			for (int i = 0; i != (LINES * 0.75) - 3 && i < plist.size(); i++)
+			{
+				wprintw(win, "%s, level %d\n", pit->second->name, pit->second->level);
+				pit++;
+			}
+			break ;
 		default:
 			break ;
 	}
@@ -170,6 +178,36 @@ void	HeroShell::Client::recvItemList(std::map<int, Item *> *l, t_packet *h)
 
 		Item	*ite = new Item(p);
 		l->insert(std::pair<int, Item *>(l->size(), ite));
+		i++;
+		usleep(5);
+	}
+}
+
+void	HeroShell::Client::recvUserList(std::map<int, Player *> *l, t_packet *h)
+{
+	int	amt = std::atoi(h->data[0]);
+	int i = 0;
+
+	while (i < amt)
+	{
+		char		data[sizeof(t_packet)];
+		t_packet	*p;
+		int			tmp;
+		int			rbytes;
+
+		rbytes = read(conn_fd, data, sizeof(t_packet));
+		if (rbytes < 0)
+			continue ;
+		while (rbytes > 0 && rbytes < sizeof(t_packet))
+		{
+			tmp = read(conn_fd, data + rbytes, sizeof(t_packet) - rbytes);
+			if (tmp > 0)
+				rbytes += tmp;
+		}
+		p = (t_packet *)&data;
+
+		Player	*np = new Player(p);
+		l->insert(std::pair<int, Player *>(l->size(), np));
 		i++;
 		usleep(5);
 	}
