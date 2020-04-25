@@ -627,7 +627,7 @@ int	Server::processPacket(t_packet *pack, int nfd)
 	}
 	else if (cmd.compare("EQUIP") == 0)
 	{
-		if (atoi(pack->data[0]) <= 0)
+		if (atoi(pack->data[0]) < 0)
 			return (1);
 		Item		*x = items[atoi(pack->data[0])];
 		ItemBase	*y = item_bases[x->base_id];
