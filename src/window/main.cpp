@@ -15,6 +15,17 @@ int		unpad(char *str)
 	return (last + 1);
 }
 
+void	listen_to_server(t_thread_data *d, std::string command)
+{
+	if (command.length() < 9)
+		return ;
+	if (strncmp(command.c_str(), "You deal ", 9) == 0)
+	{
+		int damage = std::atoi(command.c_str() + 9);
+		d->plr->add_data(DAMAGE, damage);
+	}
+}
+
 void	*listener(void *ptr)
 {
 	t_thread_data	*d = (t_thread_data*)ptr;
@@ -37,7 +48,7 @@ void	*listener(void *ptr)
 			if (DEBUG == 1)
 				wprintw(d->scr->log, "recieved: %s\n", p->command);
 			if (strcmp(p->command, "STATUS") == 0)
-				d->scr->update(p);
+				d->scr->update(d->plr, p);
 			else if (strcmp(p->command, "CHAT") == 0 ||
 						strcmp(p->command, "NOTIFY") == 0)
 			{
@@ -49,6 +60,7 @@ void	*listener(void *ptr)
 					st += std::string(p->data[i]);
 				if (strcmp(p->id, "SERVER") == 0)
 				{
+					listen_to_server(d, st);
 					wattron(d->scr->log, COLOR_PAIR(res ? 1 : 3));
 					wprintw(d->scr->log, "%s\n", st.c_str());
 					wattron(d->scr->log, COLOR_PAIR(1));
@@ -338,6 +350,7 @@ int		main(int argc, char **argv)
 			mvwprintw(m->mainwin, 6, 1, "server dead! :(    ");
 	}
 	HeroShell::Screen	scr;
+	HeroShell::PlayerAvg	plr;
 	t_thread_data		d;
 	char				*buf;
 	pthread_t			listenthread;
@@ -347,6 +360,7 @@ int		main(int argc, char **argv)
 	buf = NULL;
 	d.cli = cli;
 	d.scr = &scr;
+	d.plr = &plr;
 	pthread_create(&listenthread, NULL, listener, &d);
 	while (1)
 	{

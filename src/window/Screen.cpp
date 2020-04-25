@@ -137,12 +137,13 @@ void	scr_refresh(int sig)
 	wrefresh(mainscr->info);
 }
 
-int	HeroShell::Screen::update(t_packet *pack)
+int	HeroShell::Screen::update(PlayerAvg *plr, t_packet *pack)
 {
 	if (std::atoi(pack->data[12]) > 0)
 		mvwprintw(info, 1, 1, "gold: %s * (10 ^ %s)     ", pack->data[0], pack->data[12]);
 	else
 		mvwprintw(info, 1, 1, "gold: %s     ", pack->data[0]);
+	mvwprintw(info, 2, 1, "dps: %d     ", plr->get_avg(DAMAGE));
 	mvwprintw(info, 3, 1, "hunters: %s (%d g/s)     ", pack->data[1], std::atoi(pack->data[1]) * 25);
 	mvwprintw(info, 4, 1, "str: %s     ", pack->data[2]);
 	mvwprintw(info, 5, 1, "int: %s     ", pack->data[3]);

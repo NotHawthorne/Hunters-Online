@@ -82,6 +82,7 @@ typedef struct	s_thread_data
 {
 	HeroShell::Client	*cli;
 	HeroShell::Screen	*scr;
+	HeroShell::PlayerAvg	*plr;
 }				t_thread_data;
 
 int		unpad(char *str);
