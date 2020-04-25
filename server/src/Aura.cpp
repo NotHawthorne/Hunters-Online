@@ -20,31 +20,31 @@ int		Aura::process(Player *p, Item *i, std::map<int, ItemBase*> *bases,
 	switch (enchant)
 	{
 		case PHYS_DMG:
-			cb_frame->dmg += (val + ((p->dex / 100.0) * proc_rate)) * (scale / 100);
+			cb_frame->dmg += (int)((val + ((p->dex / 100.0) * proc_rate)) * (scale / 100.0)) + 1;
 			break ;
 		case CRIT_CHANCE:
 			cb_frame->crit = cb_frame->crit ? cb_frame->crit : rand() % ((val * (scale / 100)) - 2) == 0;
 			break ;
 		case STR:
-			cb_frame->strbuff += val * (scale / 100);
+			cb_frame->strbuff += (int)(val * (scale / 100.0)) + 1;
 			break ;
 		case INT:
-			cb_frame->intbuff += val * (scale / 100);
+			cb_frame->intbuff += (int)(val * (scale / 100.0)) + 1;
 			break ;
 		case DEX:
-			cb_frame->dexbuff += val * (scale / 100);
+			cb_frame->dexbuff += (int)(val * (scale / 100.0)) + 1;
 			break ;
 		case STUN:
 			cb_frame->next_tick += val;
 			break ;
 		case HEALTH:
-			cb_frame->max_hp_mod += val * (scale / 100);
+			cb_frame->max_hp_mod += (int)(val * (scale / 100.0)) + 1;
 			break ;
 		case HEAL:
-			cb_frame->heal_amt += (val + p->intel) * (scale / 100);
+			cb_frame->heal_amt += (int)((val + p->intel) * (scale / 100.0)) + 1;
 			break ;
 		case CHAIN_LIGHTNING:
-			stackdmg = (val + p->intel) * (scale / 100);
+			stackdmg = (int)((val + p->intel) * (scale / 100.0)) + 1;
 			for (int i = 0; i != p->mon.count; i++)
 			{
 				cb_frame->dmg += stackdmg;
@@ -52,7 +52,7 @@ int		Aura::process(Player *p, Item *i, std::map<int, ItemBase*> *bases,
 			}
 			break ;
 		case LIFESTEAL:
-			cb_frame->lifesteal_amt += val * (scale / 100);
+			cb_frame->lifesteal_amt += (int)(val * (scale / 100.0)) + 1;
 			break ;
 	}
 	return (1);

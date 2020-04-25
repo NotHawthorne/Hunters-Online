@@ -153,7 +153,7 @@ int	HeroShell::Client::updateDisplay(WINDOW *win, int new_state)
 				wprintw(win, "%d armor\n", item_base[ite->second->base_id]->armor);
 			wprintw(win, "ilvl: %d (%d)\n", item_base[ite->second->base_id]->level, ite->second->enchants[1]);
 			for (int i = 0; i < 5 && ite->second->enchants[i]; i++)
-				wprintw(win, finalAuraInfoString(auras[it_eq->second->enchants[i]], it_eq->second, i).c_str());
+				wprintw(win, finalAuraInfoString(auras[ite->second->enchants[i]], ite->second, i).c_str());
 			//wprintw(win, "%s (%d)\n", EffectStrings[auras[ite->second->enchants[i]]->enchant], ite->second->scale[i]);
 			break ;
 		case PLAYERS:
@@ -335,36 +335,37 @@ std::string	HeroShell::Client::finalAuraInfoString(Aura *a, Item *i, int idx)
 {
 	std::string	info("");
 	if (a->proc_rate)
-		info += string_format("%d\% chance for ", a->proc_rate);
+		info += string_format("%d chance for ", a->proc_rate);
 	switch (a->enchant)
 	{
 		case PHYS_DMG:
-			info += string_format("+%d physical damage", a->val * (i->scale[idx] / 100));
+			info += string_format("+%d physical damage", (int)(a->val * (i->scale[idx] / 100.0)) + 1);
 			break ;
 		case CRIT_CHANCE:
-			info += string_format("+%d\% chance to crit", (a->val * (i->scale[idx] / 100)));
+			info += string_format("+%d chance to crit", int(a->val * (i->scale[idx] / 100.0)) + 1);
 			break ;
 		case STR:
-			info += string_format("+%d strength", a->val * (i->scale[idx] / 100));
+			info += string_format("+%d strength", (int)(a->val * (i->scale[idx] / 100.0)) + 1);
 			break ;
 		case INT:
-			info += string_format("+%d intellect", a->val * (i->scale[idx] / 100));
+			info += string_format("+%d intellect", (int)(a->val * (i->scale[idx] / 100.0)) + 1);
 			break ;
 		case STUN:
 			info += string_format("+%d tick stun", a->val);
 			break ;
 		case HEALTH:
-			info += string_format("+%d health", a->val * (i->scale[idx] / 100));
+			info += string_format("+%d health", (int)(a->val * (i->scale[idx] / 100.0)) + 1);
 			break ;
 		case HEAL:
-			info += string_format("+%d healing", (a->val * (i->scale[idx] / 100)));
+			info += string_format("+%d healing", (int)(a->val * (i->scale[idx] / 100.0)) + 1);
 			break ;
 		case CHAIN_LIGHTNING:
-			info += string_format("chain lightning that deals %d damage and bounces three times", (a->val * (i->scale[idx] / 100)));
+			info += string_format("chain lightning that deals %d damage and bounces three times", ((int)(a->val * (i->scale[idx] / 100.0)) + 1));
 			break ;
 		case LIFESTEAL:
-			info += string_format("stealing %d health", (a->val * (i->scale[idx] / 100)));
+			info += string_format("stealing %d health", (int)(a->val * (i->scale[idx] / 100.0)) + 1);
 			break ;
 	}
+	info += "\n";
 	return (info);
 }
