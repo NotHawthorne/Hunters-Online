@@ -150,7 +150,7 @@ int	HeroShell::Client::updateDisplay(WINDOW *win, int new_state)
 				wprintw(win, "%d - %d dmg\n", item_base[ite->second->base_id]->damage_min, item_base[ite->second->base_id]->damage_max);
 			if (item_base[ite->second->base_id]->armor > 0)
 				wprintw(win, "%d armor\n", item_base[ite->second->base_id]->armor);
-			wprintw(win, "ilvl: %d\n", item_base[ite->second->base_id]->level);
+			wprintw(win, "ilvl: %d (%d)\n", item_base[ite->second->base_id]->level, ite->second->enchants[1]);
 			for (int i = 0; i < 5 && ite->second->enchants[i]; i++)
 				wprintw(win, "%s (%d)\n", EffectStrings[auras[ite->second->enchants[i]]->enchant], ite->second->scale[i]);
 			break ;

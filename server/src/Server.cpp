@@ -189,7 +189,7 @@ Item	*Server::genItem(int level)
 	}
 	for (int i = 0; i != auras_ && ti->item_type != JUNK; i++)
 		ni->scale[i] = (rarity * (rand() % 10)) + level + ti->level;
-	if (ni->enchants[0] = 0)
+	if (ni->enchants[0] == 0)
 		ni->rarity = 0;
 	items.insert(std::pair<int, Item *>(items.size(), ni));
 	std::string	q = string_format("INSERT INTO item_instance(id, base_id, rarity, enc1, enc2, enc3, enc4, enc5, sca1, sca2, sca3, sca4, sca5) VALUES (%d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d);", ni->instance_id, ni->base_id, ni->rarity, ni->enchants[0], ni->enchants[1], ni->enchants[2], ni->enchants[3], ni->enchants[4], ni->scale[0], ni->scale[1], ni->scale[2], ni->scale[3], ni->scale[4]);
