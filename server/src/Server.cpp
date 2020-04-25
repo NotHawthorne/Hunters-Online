@@ -164,7 +164,9 @@ int	Server::sendItemList(Player *p, std::map<int, Item *> *list, int type)
 Item	*Server::genItem(int level)
 {
 	Item	*ni = new Item();
+	int		rarity = 1;
 
+	for (rarity = 1; rand() % rarity == 0; rarity++);
 	ItemBase	*ti = item_bases[(rand() % item_bases.size()) + 1];
 	Aura	*ta = auras[(rand() % auras.size()) + 1];
 
@@ -176,7 +178,7 @@ Item	*Server::genItem(int level)
 	int		auras_ = (rand() % 5);
 	bzero(ni->enchants, sizeof(int) * 5);
 	bzero(ni->scale, sizeof(int) * 5);
-	ni->rarity = rand() % 100;
+	ni->rarity = rarity;
 	for (int i = 0; i != auras_ && ti->item_type != JUNK; i++)
 	{
 		ta = auras[(rand() % auras.size()) + 1];
@@ -185,7 +187,9 @@ Item	*Server::genItem(int level)
 		ni->enchants[i] = ta->id;
 	}
 	for (int i = 0; i != auras_ && ti->item_type != JUNK; i++)
-		ni->scale[i] = (rand() % 100);
+		ni->scale[i] = (rarity * (rand() % 10)) + level + ti->level;
+	if (ni->enchants[0] = 0)
+		ni->rarity = 0;
 	items.insert(std::pair<int, Item *>(items.size(), ni));
 	std::string	q = string_format("INSERT INTO item_instance(id, base_id, rarity, enc1, enc2, enc3, enc4, enc5, sca1, sca2, sca3, sca4, sca5) VALUES (%d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d);", ni->instance_id, ni->base_id, ni->rarity, ni->enchants[0], ni->enchants[1], ni->enchants[2], ni->enchants[3], ni->enchants[4], ni->scale[0], ni->scale[1], ni->scale[2], ni->scale[3], ni->scale[4]);
 	int ret = sqlite3_exec(db, q.c_str(), NULL, 0, NULL);
@@ -545,10 +549,13 @@ int	Server::sendPlayerList(t_packet *pack, Player *p)
 	std::advance(iter, amt);
 	for (std::map<std::string, Player *>::iterator it = players.begin(); it != players.end() && x < amt_send; ++it)
 	{
-		t_packet	*pa = createPacket(it->second->name, "PLAYER");
-		memcpy(pa->data[0], std::to_string(it->second->lvl).c_str(), std::to_string(it->second->lvl).size());
-		p->packet_queue->push(pa);
-		x++;
+		if (it->second->fd > 0)
+		{
+			t_packet	*pa = createPacket(it->second->name, "PLAYER");
+			memcpy(pa->data[0], std::to_string(it->second->lvl).c_str(), std::to_string(it->second->lvl).size());
+			p->packet_queue->push(pa);
+			x++;
+		}
 	}
 	return (1);
 }

@@ -2,6 +2,7 @@
 # define EFFECT_H
 
 # include <stdlib.h>
+# include <cstring>
 
 enum	Effects
 {
@@ -43,6 +44,8 @@ public:
 	int		val;
 	int		proc_rate;
 	int		tier;
+	char	title[16];
+	int		pre;
 
 	Aura(char **argv);
 };

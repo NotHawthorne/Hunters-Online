@@ -6,6 +6,17 @@
 # include <string.h>
 # include "packet.h"
 
+enum	Item_Rarity_Colors
+{
+	COMMON = 4,
+	UNCOMMON = 5,
+	RARE = 6,
+	EPIC = 7,
+	LEGENDARY = 8,
+	MYTHIC = 9,
+	SPECIAL = 10
+};
+
 enum	Item_Types
 {
 	JUNK = 0,

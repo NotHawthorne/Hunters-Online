@@ -19,8 +19,8 @@
 #include "window.h"
 #include "packet.h"
 
-#define ADDRESS "64.225.45.59"
-#define _ADDRESS "127.0.0.1"
+#define _ADDRESS "64.225.45.59"
+#define ADDRESS "127.0.0.1"
 #define PORT 4242
 
 enum display_states
@@ -54,6 +54,7 @@ namespace HeroShell
 		void	recvItemList(std::map<int, Item *> *l, t_packet *h);
 		int	updateDisplay(WINDOW *win, int new_state);
 		void	recvUserList(std::map<int, Player *> *l, t_packet *h);
+		std::string	constructItemNameStr(Item *i);
 
 		sqlite3					*db;
 		std::map<int, Item *>	inventory;

@@ -1,5 +1,7 @@
 #include "../includes/Server.hpp"
 
+Monster::Monster() { hp = 0; }
+
 int	Player::tick(Server *s)
 {
 	unsigned int		gold_gained = 0;

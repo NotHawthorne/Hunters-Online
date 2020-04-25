@@ -15,6 +15,7 @@ public:
 	int		dmg;
 	int		armor;
 	int		count;
+	Monster();
 };
 
 class	Area {

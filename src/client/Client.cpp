@@ -16,6 +16,30 @@ int	HeroShell::Client::sendPacket(char *id, char *command,
 	return (1);
 }
 
+std::string	HeroShell::Client::constructItemNameStr(Item *i)
+{
+	std::string	item_name(item_base[i->base_id]->name);
+	int	pre = 0;
+	int	post = 0;
+	for (int x = 0; x != 5; x++)
+	{
+		if (i->enchants[x])
+		{
+			if (auras[i->enchants[x]]->pre)
+				pre = i->enchants[x];
+			else
+				post = i->enchants[x];
+		}
+	}
+	std::string	ret("");
+	if (pre)
+		ret += auras[pre]->title;
+	ret += item_name;
+	if (post)
+		ret += auras[post]->title;
+	return (ret);
+}
+
 int	HeroShell::Client::updateDisplay(WINDOW *win, int new_state)
 {
 	if (state == last_state)
@@ -38,7 +62,9 @@ int	HeroShell::Client::updateDisplay(WINDOW *win, int new_state)
 			wprintw(win, "equipment (%d/13):\n", equipment.size());
 			while (x < equipment.size())
 			{
-				wprintw(win, "%-8d -- %s\n", x, item_base[it_eq->second->base_id]->name);
+				wattron(win, COLOR_PAIR((ite->second->rarity + 3) > SPECIAL ? SPECIAL : (ite->second->rarity + 3)));
+				wprintw(win, "%-8d -- %s\n", x, constructItemNameStr(ite->second).c_str());
+				wattron(win, COLOR_PAIR(COMMON));
 				it_eq++;
 				x++;
 			}
@@ -49,7 +75,9 @@ int	HeroShell::Client::updateDisplay(WINDOW *win, int new_state)
 			std::advance(ite, ((LINES * 0.75) - 3) * inven_page);
 			while (x < (LINES * 0.75) - 4 && ite != inventory.end())
 			{
-				wprintw(win, "%-8d -- %s\n", x + n, item_base[ite->second->base_id]->name);
+				wattron(win, COLOR_PAIR((ite->second->rarity + 3) > SPECIAL ? SPECIAL : (ite->second->rarity + 3)));
+				wprintw(win, "%-8d -- %s (%d)\n", x + n, constructItemNameStr(ite->second).c_str(), ite->second->rarity); 
+				wattron(win, COLOR_PAIR(COMMON));
 				ite++;
 				x++;
 			}
@@ -64,7 +92,9 @@ int	HeroShell::Client::updateDisplay(WINDOW *win, int new_state)
 			if (inspect_slot >= equipment.size())
 				break ;
 			std::advance(it_eq, inspect_slot);
-			wprintw(win, "[%s] (Equipped)\n", item_base[it_eq->second->base_id]->name);
+			wattron(win, COLOR_PAIR((it_eq->second->rarity + 3) > SPECIAL ? SPECIAL : (it_eq->second->rarity + 3)));
+			wprintw(win, "[%s] (Equipped)\n", constructItemNameStr(it_eq->second).c_str());
+			wattron(win, COLOR_PAIR(COMMON));
 			wprintw(win, "%s | %s | req: %d\n",
 				Item_Type_String[item_base[it_eq->second->base_id]->item_type],
 				Item_Slot_String[item_base[it_eq->second->base_id]->slot],
@@ -89,7 +119,9 @@ int	HeroShell::Client::updateDisplay(WINDOW *win, int new_state)
 			if (inspect_slot >= inventory.size())
 				break ;
 			std::advance(ite, inspect_slot);
-			wprintw(win, "[%s]\n", item_base[ite->second->base_id]->name);
+			wattron(win, COLOR_PAIR((ite->second->rarity + 3) > SPECIAL ? SPECIAL : (ite->second->rarity + 3)));
+			wprintw(win, "[%s]\n", constructItemNameStr(ite->second).c_str());
+			wattron(win, COLOR_PAIR(COMMON));
 			wprintw(win, "%s | %s | req: %d\n",
 				Item_Type_String[item_base[ite->second->base_id]->item_type],
 				Item_Slot_String[item_base[ite->second->base_id]->slot],
