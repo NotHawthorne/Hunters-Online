@@ -40,11 +40,11 @@ int	PacketQueue::push(t_packet *p)
 		q = tail;
 		is_empty = false;
 	}
-	if (size++ >= 51)
+	/*if (size++ >= 51)
 	{
 		size--;
 		delete pop();
-	}
+	}*/
 	return (1);
 }
 
