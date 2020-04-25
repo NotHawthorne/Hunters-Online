@@ -636,10 +636,8 @@ int	Server::processPacket(t_packet *pack, int nfd)
 		if (p->inventory.find(x->instance_id) != p->inventory.end())
 		{
 			if (p->equip[y->slot] != NULL)
-			{
 				grantItem(p, p->equip[y->slot]);
-				removeItem(p, x);
-			}
+			removeItem(p, x);
 			p->equip[y->slot] = x;
 			sendItemList(p, &p->inventory, 0);
 			sendItemList(p, &p->equip, 1);
