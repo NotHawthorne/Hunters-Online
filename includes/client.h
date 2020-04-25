@@ -19,7 +19,7 @@
 #include "window.h"
 #include "packet.h"
 
-#define ADDRESS "127.0.0.1"
+#define ADDRESS "64.225.45.59"
 #define PORT 4242
 
 enum display_states
