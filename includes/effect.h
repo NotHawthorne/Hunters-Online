@@ -33,9 +33,11 @@ static char	EffectStrings[][32] = {
 	"lifestealing",
 	"stun",
 	"chain lightning",
-	"poison",
+	"poison",	//strength and decay
 	"heal",
-	"health"
+	"health",
+	"cleave",	//TODO
+	"bleed"		//TODO
 };
 
 class	Aura {

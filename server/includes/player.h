@@ -6,6 +6,22 @@ class Server;
 # include <string>
 # include "item.h"
 
+typedef struct	s_combat_frame
+{
+	int		dmg;
+	int		strbuff;
+	int		dexbuff;
+	int		intbuff;
+	int		lifesteal_amt;
+	int		heal_amt;
+	int 	armor_mit;
+	int 	max_hp_mod;
+	bool	crit;
+	int		dot[5];
+	int		dec[5];
+	int		next_tick;
+}				t_combat_frame;
+
 class	Monster {
 public:
 	char	name[16];
@@ -53,6 +69,7 @@ public:
 
 	int		tick(Server *s);
 
+	t_combat_frame	*fr;
 	Player();
 	~Player();
 };

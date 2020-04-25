@@ -3,6 +3,7 @@
 
 class Player;
 class Monster;
+class Item;
 # include "player.h"
 
 enum	Effects
@@ -19,10 +20,13 @@ enum	Effects
 	CHAIN_LIGHTNING = 10,
 	POISON = 11,
 	HEAL = 12,
-	HEALTH = 13
+	HEALTH = 13,
+	CLEAVE = 14,
+	BLEED = 15,
+	ARMOR_BUFF = 16
 };
 
-static char	*EffectStrings[14] = {
+static char	*EffectStrings[17] = {
 	"none",
 	"phys damage",
 	"atk spd",
@@ -36,7 +40,10 @@ static char	*EffectStrings[14] = {
 	"chain lightning",
 	"poison",
 	"heal",
-	"health" 
+	"health",
+	"cleave",
+	"bleed",
+	"armor"
 };
 
 class	Aura {
@@ -48,6 +55,8 @@ public:
 	int		tier;
 
 	Aura(char **argv);
+	int		process(Player *p, Item *i, std::map<int, ItemBase*> *bases,
+						t_combat_frame *cb_frame, int scale);
 	int		proc(Player *p, Monster *m, int scale);
 	int		apply(Player *p, int scale);
 	int		remove(Player *p, int scale);

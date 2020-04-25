@@ -1,2 +1,2 @@
 DIR := src/client
-SRC += $(DIR)/Client.cpp $(DIR)/Item.cpp $(DIR)/Aura.cpp $(DIR)/Login.cpp $(DIR)/Player.cpp
+SRC += $(DIR)/Client.cpp $(DIR)/Item.cpp $(DIR)/Aura.cpp $(DIR)/Login.cpp $(DIR)/Player.cpp $(DIR)/utils.cpp

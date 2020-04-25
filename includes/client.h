@@ -14,6 +14,7 @@
 #include <vector>
 #include <sqlite3.h>
 #include <map>
+#include "utils.h"
 #include "effect.h"
 #include "item.h"
 #include "window.h"
@@ -55,6 +56,7 @@ namespace HeroShell
 		int	updateDisplay(WINDOW *win, int new_state);
 		void	recvUserList(std::map<int, Player *> *l, t_packet *h);
 		std::string	constructItemNameStr(Item *i);
+		std::string	finalAuraInfoString(Aura *a, Item *i, int idx);
 
 		sqlite3					*db;
 		std::map<int, Item *>	inventory;
