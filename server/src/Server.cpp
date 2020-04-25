@@ -48,18 +48,19 @@ Server::Server()
 	std::cout << "Done!\n";
 }
 
-int	Server::notify(Player *p, std::string info)
+int	Server::notify(Player *p, std::string info, int level)
 {
 	t_packet	*pa = new t_packet;
 	const char	*d;
-	int			x = 1;
+	int			x = 2;
 	std::string	s = std::to_string(info.size());
 
 	memcpy(pa->id, "SERVER\0", 7);
 	memcpy(pa->command, "NOTIFY\0", 7);
 	d = info.c_str();
 	memcpy(pa->data[0], s.c_str(), s.size() + 1);
-	for (int i = 0; i < (int)info.size(); i+= 15)
+	memcpy(pa->data[1], std::to_string(level).c_str(), std::to_string(level).size() + 1);
+	for (int i = 0; i < (int)info.size() && x < 30; i+= 15)
 	{
 		bzero(pa->data[x], 16);
 		memcpy(pa->data[x++], d + i, info.size() - i > 15 ? 15 : info.size() - i);
@@ -206,7 +207,7 @@ int		Server::grantItem(Player *p, Item *i)
 	int res = sqlite3_exec(db, q.c_str(), NULL, 0, NULL);
 	if (res != SQLITE_OK)
 		printf("error granting item\n");
-	notify(p, string_format("You've found a %s!", item_bases[i->base_id]->name));
+	notify(p, string_format("You've found a %s!", item_bases[i->base_id]->name), NOTIFY);
 	return (1);
 }
 
@@ -247,7 +248,7 @@ int	Server::awardKill(Player *p)
 	int g = (((rand() % (p->lvl + 5)) + 1) * 100) * p->mon.count;
 	p->exp += e;
 	p->gold += g;
-	notify(p, string_format("You've killed some monsters, gaining %d gold and %d experience.", g, e));
+	notify(p, string_format("You've killed some monsters, gaining %d gold and %d experience.", g, e), LOG);
 	if (p->exp >= (p->lvl * 1000))
 	{
 		p->lvl++;
@@ -259,7 +260,7 @@ int	Server::awardKill(Player *p)
 		p->dex += 1;
 		p->intel += 1;
 		p->exp -= (p->lvl - 1) * 1000;
-		notify(p, string_format("You've reached level %d!\n", p->lvl));
+		notify(p, string_format("You've reached level %d!\n", p->lvl), NOTIFY);
 	}
 	if (rand() % (100 - p->lvl) == 0)
 	{
@@ -424,7 +425,7 @@ int	Server::newPlayer(t_packet *pack, int nfd)
 	pl->lvl = 1;
 	pl->exp = 0;
 	players.insert(std::pair<std::string, Player *>(std::string(pl->name), pl));
-	notify(pl, "Successfully registered new acount! Welcome!");
+	notify(pl, "Successfully registered new acount! Welcome!", SYSTEM);
 	return (1);
 }
 
@@ -592,10 +593,10 @@ int	Server::processPacket(t_packet *pack, int nfd)
 		{
 			respondLogin(nfd, true);
 			p->fd = nfd;
-			sendStatus(p);
+			//sendStatus(p);
 			sendItemList(p, &p->inventory, 0);
 			sendItemList(p, &p->equip, 1);
-			notify(p, string_format("[MOTD] %s", MOTD));
+			notify(p, string_format("[MOTD] %s", MOTD), SYSTEM);
 			return (1);
 		}
 		else
@@ -608,7 +609,7 @@ int	Server::processPacket(t_packet *pack, int nfd)
 	else if (cmd.compare("WHIS") == 0)
 	{
 		if (strcmp(pack->data[0], pack->id) == 0)
-			notify(p, "You whisper to yourself for a while, hoping nobody notices. What a strange thing to do.");
+			notify(p, "You whisper to yourself for a while, hoping nobody notices. What a strange thing to do.", NOTIFY);
 		else if (players.find(std::string(pack->data[0])) != players.end() && players[std::string(pack->data[0])]->fd > 0)
 		{
 			t_packet	*a = new t_packet;
@@ -621,7 +622,7 @@ int	Server::processPacket(t_packet *pack, int nfd)
 			//write(nfd, &(*pack), sizeof(t_packet));
 		}
 		else
-			notify(p, string_format("User %s is offline.", pack->data[0]));
+			notify(p, string_format("User %s is offline.", pack->data[0]), SYSTEM);
 		return (1);
 	}
 	else if (cmd.compare("EQUIP") == 0)
@@ -642,8 +643,8 @@ int	Server::processPacket(t_packet *pack, int nfd)
 			p->equip[y->slot] = x;
 			sendItemList(p, &p->inventory, 0);
 			sendItemList(p, &p->equip, 1);
-			sendStatus(p);
-			notify(p, string_format("You've equipped %s", y->name));
+			//sendStatus(p);
+			notify(p, string_format("You've equipped %s", y->name), NOTIFY);
 		}
 		else
 			printf("couldn't find\n");

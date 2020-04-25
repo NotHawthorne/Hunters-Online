@@ -53,19 +53,28 @@ int	Player::tick(Server *s)
 	if (heal_amt)
 		hp += heal_amt;
 	if (rand() % (1000 - (dex + dexbuff) <= 0 ? 1 : 1000 - (dex + dexbuff)) == 0)
+	{
+		s->notify(this, std::string("Critical hit!"), LOG);
 		dmg += dmg + (dex + dexbuff);
+	}
 	if (mon.hp > 0 && fd > 0)
 	{
 		mon.hp -= dmg + ((str + strbuff) / 2);
-		s->notify(this, string_format("You deal %d damage to the monsters!", dmg + ((str + strbuff) / 2)));
-		hp -= (mon.dmg - (armor_mit / 20)) - lifesteal_amt;
+		s->notify(this, string_format("You deal %d damage to the monsters!", dmg + ((str + strbuff) / 2)), LOG);
+		hp -= (mon.dmg - (armor_mit / 20));
+		s->notify(this, string_format("You take %d damage.", mon.dmg - (armor_mit / 20)), LOG);
+		if (lifesteal_amt)
+		{
+			s->notify(this, string_format("You stole %d health.", lifesteal_amt), LOG);
+			hp += lifesteal_amt;
+		}
 	}
 	else
 	{
 		mon.count = (rand() % 3) + 1;
-		mon.hp = (10 * lvl) * 3;
+		mon.hp = ((10 * lvl) * mon.count) * 3;
 		mon.level = lvl;
-		mon.dmg = lvl * 2;
+		mon.dmg = (lvl * 2) * mon.count;
 		return (2);
 	}
 	if (hp <= 0)
@@ -82,7 +91,15 @@ int	Player::tick(Server *s)
 		mana += intel + intbuff;
 	if (hp > (max_hp + max_hp_mod))
 		hp = (max_hp + max_hp_mod);
+	str += strbuff;
+	dex += dexbuff;
+	intel += intbuff;
+	max_hp += max_hp_mod;
 	s->sendStatus(this);
+	str -= strbuff;
+	dex -= dexbuff;
+	intel -= intbuff;
+	max_hp -= max_hp_mod;
 	return (packet_queue->send(fd));
 }
 

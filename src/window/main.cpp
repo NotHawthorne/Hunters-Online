@@ -44,8 +44,8 @@ void	*listener(void *ptr)
 				std::string		st("");
 				int a = atoi(p->data[0]);
 				int res = strcmp(p->command, "NOTIFY");
-				
-				for (int i = 1; i < 30 && st.size() < a; i++)
+				int level = atoi(p->data[1]);
+				for (int i = 2; i < 30 && st.size() < a; i++)
 					st += std::string(p->data[i]);
 				if (strcmp(p->id, "SERVER") == 0)
 				{

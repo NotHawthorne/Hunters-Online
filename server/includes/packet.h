@@ -3,6 +3,13 @@
 
 # include <cstddef>
 
+enum	Log_Levels
+{
+	SYSTEM = 0,
+	LOG = 1,
+	NOTIFY = 2
+};
+
 typedef struct	s_packet
 {
 	char	id[16];

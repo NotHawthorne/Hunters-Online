@@ -47,7 +47,7 @@ public:
 	int		loadPlayers();
 	int		loginRequest(t_packet *p);
 	int		awardKill(Player *p);
-	int		notify(Player *p, std::string str);
+	int		notify(Player *p, std::string str, int level);
 	int		sendItemList(Player *p, std::map<int, Item *> *list, int type);
 	int		loadBases();
 	int		loadAuras();
