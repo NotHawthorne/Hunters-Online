@@ -6,22 +6,23 @@
 
 enum	Effects
 {
-	PHYS_DMG,
-	ATK_SPD,
-	CRIT_CHANCE,
-	CRIT_MULT,
-	INT,
-	STR,
-	DEX,
-	LIFESTEAL,
-	STUN,
-	CHAIN_LIGHTNING,
-	POISON,
-	HEAL,
-	HEALTH
+	PHYS_DMG = 1,
+	ATK_SPD = 2,
+	CRIT_CHANCE = 3,
+	CRIT_MULT = 4,
+	INT = 5,
+	STR = 6,
+	DEX = 7,
+	LIFESTEAL = 8,
+	STUN = 9,
+	CHAIN_LIGHTNING = 10,
+	POISON = 11,
+	HEAL = 12,
+	HEALTH = 13
 };
 
 static char	EffectStrings[][32] = {
+	"none",
 	"physical damage",
 	"attack speed",
 	"critical strike chance",

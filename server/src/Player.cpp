@@ -29,19 +29,19 @@ int	Player::tick(Server *s)
 		{
 			for (int i = 0; i != 5; i++)
 			{
-				if (it->second->enchants[i] == PHYS_DMG)
+				if (s->auras[it->second->enchants[i]]->enchant == PHYS_DMG)
 					dmg += it->second->scale[i];
-				else if (it->second->enchants[i] == STR)
+				else if (s->auras[it->second->enchants[i]]->enchant == STR)
 					strbuff += it->second->scale[i];
-				else if (it->second->enchants[i] == DEX)
+				else if (s->auras[it->second->enchants[i]]->enchant == DEX)
 					dexbuff += it->second->scale[i];
-				else if (it->second->enchants[i] == INT)
+				else if (s->auras[it->second->enchants[i]]->enchant == INT)
 					intbuff += it->second->scale[i];
-				else if (it->second->enchants[i] == LIFESTEAL)
+				else if (s->auras[it->second->enchants[i]]->enchant == LIFESTEAL)
 					lifesteal_amt += it->second->scale[i];
-				else if (it->second->enchants[i] == HEAL)
+				else if (s->auras[it->second->enchants[i]]->enchant == HEAL)
 					heal_amt += it->second->scale[i];
-				else if (it->second->enchants[i] == HEALTH)
+				else if (s->auras[it->second->enchants[i]]->enchant == HEALTH)
 					max_hp_mod += it->second->scale[i];
 			}
 			if (s->item_bases[it->second->base_id]->armor)

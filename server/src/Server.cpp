@@ -230,7 +230,7 @@ static int	load_equip_callback(void *d, int argc, char **argv, char **colname)
 
 	for (int i = 1; i != 13; i++)
 		if (std::atoi(argv[i]) > 0)
-			p->equip[p->equip.size()] = s->items[std::atoi(argv[i])];
+			p->equip[i] = s->items[std::atoi(argv[i])];
 	return (0);
 }
 
