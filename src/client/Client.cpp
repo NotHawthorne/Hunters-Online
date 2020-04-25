@@ -31,6 +31,8 @@ std::string	HeroShell::Client::constructItemNameStr(Item *i)
 				post = i->enchants[x];
 		}
 	}
+	if (!pre && !post)
+		return (item_name);
 	std::string	ret("");
 	if (pre)
 		ret += auras[pre]->title;
@@ -53,6 +55,7 @@ int	HeroShell::Client::updateDisplay(WINDOW *win, int new_state)
 	std::map<int, Item *>::iterator it_eq = equipment.begin();
 	int x = 0;
 	int n = ((LINES * 0.75) - 3) * inven_page;
+	Item **ia = new Item*[13];
 	switch (state)
 	{
 		case WELCOME:
@@ -60,12 +63,21 @@ int	HeroShell::Client::updateDisplay(WINDOW *win, int new_state)
 			break ;
 		case EQUIPMENT:
 			wprintw(win, "equipment (%d/13):\n", equipment.size());
-			while (x < equipment.size())
+			for (int y = 0; y != 13; y++)
+				ia[y] = NULL;
+			for (int y = 0; y != 13; y++)
+				if (equipment.find(y) != equipment.end())
+					ia[item_base[equipment[y]->base_id]->slot] = equipment[y];
+			while (x < 13)
 			{
-				wattron(win, COLOR_PAIR((ite->second->rarity + 3) > SPECIAL ? SPECIAL : (ite->second->rarity + 3)));
-				wprintw(win, "%-8d -- %s\n", x, constructItemNameStr(ite->second).c_str());
-				wattron(win, COLOR_PAIR(COMMON));
-				it_eq++;
+				if (ia[x])
+				{
+					wattron(win, COLOR_PAIR((ia[x]->rarity + 3) > SPECIAL ? SPECIAL : (ia[x]->rarity + 3)));
+					wprintw(win, "%-16s -- %s\n", Item_Slot_String[x], constructItemNameStr(ia[x]).c_str());
+					wattron(win, COLOR_PAIR(COMMON));
+				}
+				else
+					wprintw(win, "%-16s -- empty\n", Item_Slot_String[x]);
 				x++;
 			}
 			break ;
@@ -76,7 +88,7 @@ int	HeroShell::Client::updateDisplay(WINDOW *win, int new_state)
 			while (x < (LINES * 0.75) - 4 && ite != inventory.end())
 			{
 				wattron(win, COLOR_PAIR((ite->second->rarity + 3) > SPECIAL ? SPECIAL : (ite->second->rarity + 3)));
-				wprintw(win, "%-8d -- %s (%d)\n", x + n, constructItemNameStr(ite->second).c_str(), ite->second->rarity); 
+				wprintw(win, "%-8d -- %s\n", x + n, constructItemNameStr(ite->second).c_str()); 
 				wattron(win, COLOR_PAIR(COMMON));
 				ite++;
 				x++;
@@ -152,6 +164,7 @@ int	HeroShell::Client::updateDisplay(WINDOW *win, int new_state)
 		default:
 			break ;
 	}
+	delete[] ia;
 	wrefresh(win);
 	return (1);
 }
