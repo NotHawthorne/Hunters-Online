@@ -27,9 +27,8 @@ int	Player::tick(Server *s)
 	{
 		for (std::map<int, Item *>::iterator it = equip.begin(); it != equip.end(); ++it)
 		{
-			for (int i = 0; i != 5; i++)
+			for (int i = 0; i != 5 && it->second->enchants[i]; i++)
 			{
-				printf("%d\n", s->auras[it->second->enchants[i]]->enchant);
 				if (s->auras[it->second->enchants[i]]->enchant == PHYS_DMG)
 					dmg += it->second->scale[i];
 				else if (s->auras[it->second->enchants[i]]->enchant == STR)
