@@ -241,12 +241,21 @@ int		parse(char *str, HeroShell::Client *cli, HeroShell::Screen *scr)
 		bzero(np.data[1], 16);
 		memcpy(np.id, cli->name, strlen(cli->name));
 		memcpy(np.command, "EQUIP", 5);
+		int slot = -1;
 		if (tokens.size() < 2)
+		{
+			if (cli->state == INSPECT)
+				slot = cli->inspect_slot;
+			else
+				return (1);
+		}
+		else
+		{
+			slot = std::stoi(tokens[1]);
+		}
+		if (slot < 0 || slot >= cli->inventory.size())
 			return (1);
-		int	slot = std::stoi(tokens[1]);
-		if (slot >= cli->inventory.size())
-			return (1);
-		std::string	des = std::to_string(cli->inventory[std::stoi(tokens[1])]->instance_id);
+		std::string	des = std::to_string(cli->inventory[slot]->instance_id);
 		memcpy(np.data[0], des.c_str(), des.size());
 		write(cli->conn_fd, &np, sizeof(t_packet));
 		return (1);
@@ -363,6 +372,7 @@ int		main(int argc, char **argv)
 				case 10:
 					form_driver(scr.form, REQ_VALIDATION);
 					buf = field_buffer(scr.input[0], 0) + 1;
+					buf[unpad(buf)] = 0;
 					if (strncmp(buf, "exit", 4) == 0)
 					{
 						close(cli->conn_fd);
