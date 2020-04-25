@@ -29,6 +29,7 @@ int	Player::tick(Server *s)
 		{
 			for (int i = 0; i != 5; i++)
 			{
+				printf("%d\n", s->auras[it->second->enchants[i]]->enchant);
 				if (s->auras[it->second->enchants[i]]->enchant == PHYS_DMG)
 					dmg += it->second->scale[i];
 				else if (s->auras[it->second->enchants[i]]->enchant == STR)
