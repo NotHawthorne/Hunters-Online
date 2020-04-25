@@ -183,6 +183,13 @@ int		parse(char *str, HeroShell::Client *cli, HeroShell::Screen *scr)
 			wrefresh(scr->log);
 			return (1);
 		}
+		else if (desire.compare("home") == 0)
+		{
+			cli->state = WELCOME;
+			cli->updateDisplay(scr->display, cli->state);
+			wrefresh(scr->display);
+			return (1);
+		}
 	}
 	else if (cmd.compare(std::string("whisper")) == 0 ||
 				cmd.compare(std::string("tell")) == 0 ||
@@ -230,6 +237,11 @@ int		parse(char *str, HeroShell::Client *cli, HeroShell::Screen *scr)
 		cli->last_state = -1;
 		cli->state = EINSPECT;
 		cli->updateDisplay(scr->display, EINSPECT);
+		return (1);
+	}
+	else if (cmd.compare(std::string("drop")) == 0)
+	{
+		wprintw(scr->log, "You tried to set it down, but as soon as you turned around you found it in your hand again.\n");
 		return (1);
 	}
 	else if (cmd.compare(std::string("equip")) == 0)
