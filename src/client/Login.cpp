@@ -32,7 +32,7 @@ LoginManager::LoginManager()
 	set_form_sub(login_form, derwin(mainwin, r, c, 1, 0));
 	post_form(login_form);
 	box(mainwin, 0, 0);
-	mvwprintw(mainwin, 1, 1, "%-s", "-=HeroShell=Login=-");
+	mvwprintw(mainwin, 1, 1, "%-s", "-=Hunters=Online=-");
 	mvwprintw(mainwin, 2, 1, "username:");
 	mvwprintw(mainwin, 4, 1, "pass:");
 	refresh();

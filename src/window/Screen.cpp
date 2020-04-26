@@ -1,8 +1,8 @@
 #include "../../includes/window.h"
 
-HeroShell::Screen	*mainscr;
+Hunters_Online::Screen	*mainscr;
 
-HeroShell::Screen::Screen()
+Hunters_Online::Screen::Screen()
 {
 	// Init
 	initscr();
@@ -34,7 +34,7 @@ HeroShell::Screen::Screen()
 	createWindows(LINES, COLS);
 }
 
-void HeroShell::Screen::createWindows(int lines, int cols)
+void Hunters_Online::Screen::createWindows(int lines, int cols)
 {
 	int	display_width;
 	int	display_height;
@@ -137,7 +137,7 @@ void	scr_refresh(int sig)
 	wrefresh(mainscr->info);
 }
 
-int	HeroShell::Screen::update(PlayerAvg *plr, t_packet *pack)
+int	Hunters_Online::Screen::update(PlayerAvg *plr, t_packet *pack)
 {
 	if (std::atoi(pack->data[12]) > 0)
 		mvwprintw(info, 1, 1, "gold: %s * (10 ^ %s)     ", pack->data[0], pack->data[12]);
@@ -156,7 +156,7 @@ int	HeroShell::Screen::update(PlayerAvg *plr, t_packet *pack)
 	return (1);
 }
 
-HeroShell::Screen::~Screen()
+Hunters_Online::Screen::~Screen()
 {
 	wborder(display, ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ');
 	wborder(console, ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ');

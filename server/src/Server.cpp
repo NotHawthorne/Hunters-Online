@@ -45,6 +45,9 @@ Server::Server()
 	std::cout << "done!\n";
 	std::cout << "Loading equipment\n";
 	loadEquip();
+	std::cout << "Loading auctions...\n";
+	loadAuctions();
+	std::cout << "Loaded " << auctions.size() << " auctions!\n";
 	std::cout << "Done!\n";
 }
 
@@ -155,7 +158,8 @@ int	Server::sendItemList(Player *p, std::map<int, Item *> *list, int type)
 		memcpy(pa->data[10], std::to_string(it->second->scale[2]).c_str(), std::to_string(it->second->scale[2]).size());
 		memcpy(pa->data[11], std::to_string(it->second->scale[3]).c_str(), std::to_string(it->second->scale[3]).size());
 		memcpy(pa->data[12], std::to_string(it->second->scale[4]).c_str(), std::to_string(it->second->scale[4]).size());
-		bzero(pa->data[13], 16);
+		if (type == 2)
+			memcpy(pa->data[13], std::to_string(auctions.find(it->second->instance_id)->second->gold).c_str(), std::to_string(auctions.find(it->second->instance_id)->second->gold).size());
 		p->packet_queue->push(pa);
 		//write(p->fd, &pa, sizeof(t_packet));
 	}
@@ -238,6 +242,29 @@ int	Server::loadEquip()
 {
 	std::string q("SELECT * FROM equip;");
 	sqlite3_exec(db, q.c_str(), load_equip_callback, (void*)this, NULL);
+	return (1);
+}
+
+static int	load_auction_callback(void *d, int argc, char **argv, char **colname)
+{
+	if (!argc || !colname)
+		return (1);
+	Server *s = (Server *)d;
+	Player *p = s->players[std::string(argv[1])];
+	Item *i = s->items[std::atoi(argv[0])];
+	Auction	*a = new Auction();
+	a->item = i;
+	a->gold = std::atoi(argv[3]);
+	a->id = std::atoi(argv[0]);
+	memcpy(a->name, argv[2], strlen(argv[2]));
+	s->auctions.insert(std::pair<int, Auction *>(std::atoi(argv[2]), a));
+	return (0);
+}
+
+int	Server::loadAuctions()
+{
+	std::string q("SELECT * FROM auctions;");
+	sqlite3_exec(db, q.c_str(), load_auction_callback, (void*)this, NULL);
 	return (1);
 }
 
@@ -631,14 +658,12 @@ int	Server::processPacket(t_packet *pack, int nfd)
 			return (1);
 		Item		*x = items[atoi(pack->data[0])];
 		ItemBase	*y = item_bases[x->base_id];
-		printf("requesting item id %d\n", atoi(pack->data[0]));
-		printf("item base %d\n", x->base_id);
 		if (p->inventory.find(x->instance_id) != p->inventory.end())
 		{
-			if (p->equip[y->slot] != NULL)
-				grantItem(p, p->equip[y->slot]);
+			if (p->equip.find(y->slot) != p->equip.end())
+				grantItem(p, p->equip.find(y->slot)->second);
 			removeItem(p, x);
-			p->equip[y->slot] = x;
+			p->equip.insert(std::pair<int, Item *>(y->slot, x));
 			sendItemList(p, &p->inventory, 0);
 			sendItemList(p, &p->equip, 1);
 			//sendStatus(p);
@@ -648,8 +673,75 @@ int	Server::processPacket(t_packet *pack, int nfd)
 			printf("couldn't find\n");
 		return (1);
 	}
+	else if (cmd.compare("LIST") == 0)
+	{
+		if (atoi(pack->data[0]) < 0)
+			return (1);
+		addAuction(pack);
+		removeItem(p, items[atoi(pack->data[0])]);
+		return (1);
+	}
+	else if (cmd.compare("UNLIST") == 0)
+	{
+		if (auctions.find(atoi(pack->data[0])) == auctions.end())
+			return (1);
+		Auction *a = auctions.find(atoi(pack->data[0]))->second;
+		if (strcmp(pack->id, a->name) == 0)
+			removeAuction(pack);
+		return (1);
+	}
+	else if (cmd.compare("BUY_ITEM") == 0)
+	{
+		if (auctions.find(atoi(pack->data[0])) == auctions.end())
+		{
+			notify(p, "Unable to submit auction request.", NOTIFY);
+			return (1);
+		}
+		Auction *a = auctions.find(atoi(pack->data[0]))->second;
+		if (p->gold - a->gold >= 0)
+		{
+			grantItem(p, a->item);
+			p->gold -= a->gold;
+			auctions.erase(a->item->instance_id);
+			delete a;
+		}
+		else
+			notify(p, "Buy order failed: Not enough gold!", NOTIFY);
+		return (1);
+	}
+	else if (cmd.compare("REQ_AUCTIONS") == 0)
+	{
+		std::map<int, Item *> tmp;
+		for (std::map<int, Auction *>::iterator it = auctions.begin(); it != auctions.end(); ++it)
+			tmp.insert(std::pair<int, Item *>(tmp.size(), it->second->item));
+		sendItemList(p, &tmp, 2);
+		return (1);
+	}
 	else
 		printf("unhandled command: %s\n", cmd.c_str());
+	return (1);
+}
+
+int	Server::removeAuction(t_packet *pack)
+{
+	if (atoi(pack->data[0]) < 0)
+		return (0);
+	Auction	*a = auctions.find(atoi(pack->data[0]))->second;
+	auctions.erase(atoi(pack->data[0]));
+	delete a;
+	return (1);
+}
+
+int	Server::addAuction(t_packet *pack)
+{
+	if (atoi(pack->data[0]) < 0 || atoi(pack->data[1]) < 0)
+		return (0);
+	Auction	*a = new Auction();
+	a->id = auctions.size();
+	a->gold = atoi(pack->data[1]);
+	memcpy(a->name, pack->id, strlen(pack->id));
+	a->item = items[atoi(pack->data[0])];
+	auctions.insert(std::pair<int, Auction *>(a->item->instance_id, a));
 	return (1);
 }
 

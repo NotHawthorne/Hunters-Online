@@ -7,6 +7,8 @@ int	Player::tick(Server *s)
 	unsigned int		gold_gained = 0;
 	int					dmg = 0;
 	int					armor_mit = 0;
+	int					dead = 0;
+	int					kill = 0;
 
 	if (fr == NULL)
 	{
@@ -77,7 +79,7 @@ int	Player::tick(Server *s)
 		mon.hp = ((10 * lvl) * mon.count) * 3;
 		mon.level = lvl;
 		mon.dmg = (lvl * 2) * mon.count;
-		return (2);
+		kill = 1;
 	}
 	if (hp <= 0)
 	{
@@ -85,7 +87,7 @@ int	Player::tick(Server *s)
 		hp = (max_hp + fr->max_hp_mod);
 		exp /= 2;
 		mana = max_mana;
-		return (3);
+		dead = 1;
 	}
 	if (hp < (max_hp + fr->max_hp_mod))
 		hp++;
@@ -112,7 +114,10 @@ int	Player::tick(Server *s)
 	fr->crit = 0;
 	fr->next_tick = fr->next_tick ? fr->next_tick - 1 : 0;
 	fr->armor_mit = 0;
-	return (packet_queue->send(fd));
+	int ret = packet_queue->send(fd);
+	if (dead || kill)
+		return (dead ? 3 : 2);
+	return (ret);
 }
 
 Player::Player()

@@ -4,7 +4,7 @@
 
 # define DEBUG 0
 
-extern HeroShell::Screen *mainscr;
+extern Hunters_Online::Screen *mainscr;
 
 int		unpad(char *str)
 {
@@ -31,11 +31,13 @@ void	*listener(void *ptr)
 	t_thread_data	*d = (t_thread_data*)ptr;
 	t_packet		*p;
 	char			data[sizeof(t_packet)];
+	t_packet		*ret = NULL;
 
 	while (1)
 	{
-		int	tmp;
-		int	rbytes = read(d->cli->conn_fd, data, sizeof(t_packet));
+		int		tmp = 0;
+		int		rbytes = -1;
+		rbytes = read(d->cli->conn_fd, data, sizeof(t_packet));
 		while (rbytes > 0 && rbytes < sizeof(t_packet))
 		{
 			tmp = read(d->cli->conn_fd, data + rbytes, sizeof(t_packet) - rbytes);
@@ -77,7 +79,7 @@ void	*listener(void *ptr)
 			else if (strcmp(p->command, "PLIST_HEAD") == 0)
 			{
 				d->cli->plist.clear();
-				d->cli->recvUserList(&d->cli->plist, p);
+				ret = d->cli->recvUserList(&d->cli->plist, p);
 				d->cli->last_state = -1;
 				d->cli->state = PLAYERS;
 				d->cli->updateDisplay(d->scr->display, PLAYERS);
@@ -88,7 +90,7 @@ void	*listener(void *ptr)
 				{
 					case 0:
 						d->cli->inventory.clear();
-						d->cli->recvItemList(&d->cli->inventory, p);
+						ret = d->cli->recvItemList(&d->cli->inventory, p, 0);
 						if (d->cli->state != INVENTORY)
 							break ;
 						d->cli->last_state = -1;
@@ -96,11 +98,11 @@ void	*listener(void *ptr)
 						break ;
 					case 1:
 						d->cli->equipment.clear();
-						d->cli->recvItemList(&d->cli->equipment, p);
+						ret = d->cli->recvItemList(&d->cli->equipment, p, 1);
 						break ;
 					default:
 						std::map<int, Item *> m;
-						d->cli->recvItemList(&m, p);
+						ret = d->cli->recvItemList(&m, p, 0);
 						printf("recieved %d items, dunno where they go tho so\n", atoi(p->data[0]));
 						printf("opcode %d\n", atoi(p->data[1]));
 						break ;
@@ -127,7 +129,7 @@ void	*listener(void *ptr)
 	return (NULL);
 }
 
-int		parse(char *str, HeroShell::Client *cli, HeroShell::Screen *scr)
+int		parse(char *str, Hunters_Online::Client *cli, Hunters_Online::Screen *scr)
 {
 	std::string	s(str);
 	std::vector<std::string> tokens;
@@ -330,12 +332,12 @@ int		main(int argc, char **argv)
 {
 	bool				valid = false;
 	LoginManager		*m = new LoginManager();
-	HeroShell::Client	*cli = NULL;
+	Hunters_Online::Client	*cli = NULL;
 	while (valid != true)
 	{
 		if (cli)
 			delete cli;
-		cli = new HeroShell::Client();
+		cli = new Hunters_Online::Client();
 		bzero(cli->name, 16);
 		if (m->readInput() > 0 && cli->conn_fd >= 0)
 		{
@@ -349,8 +351,8 @@ int		main(int argc, char **argv)
 		else if (cli->conn_fd < 0)
 			mvwprintw(m->mainwin, 6, 1, "server dead! :(    ");
 	}
-	HeroShell::Screen	scr;
-	HeroShell::PlayerAvg	plr;
+	Hunters_Online::Screen	scr;
+	Hunters_Online::PlayerAvg	plr;
 	t_thread_data		d;
 	char				*buf;
 	pthread_t			listenthread;

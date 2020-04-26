@@ -1,4 +1,4 @@
-NAME = heroshell
+NAME = hunters
 CC := g++
 
 all: $(NAME)
@@ -7,7 +7,7 @@ MODULES := src/window src/client includes
 LIBDIRS := 
 LIBS := -lncurses -lform -lpthread -lsqlite3
 #CXXFLAGS := -Iincludes -Wall -Werror -Wextra -g
-CXXFLAGS := -Iincludes -g
+CXXFLAGS := -Iincludes -g #-fsanitize=address
 MODNAME := module.mk
 SRC :=
 

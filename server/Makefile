@@ -16,7 +16,7 @@ SRC = src/Packet.cpp src/Aura.cpp src/Item.cpp src/Server.cpp src/Player.cpp src
 OBJ = $(patsubst %.cpp,%.o,$(SRC))
 
 CXX = g++
-CXXFLAGS = -Iincludes -lpthread -lsqlite3
+CXXFLAGS = -Iincludes -lpthread -lsqlite3 -g -fsanitize=address
 
 
 all: $(NAME)

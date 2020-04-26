@@ -35,6 +35,14 @@ enum display_states
 	PLAYERS
 };
 
+class Auction {
+public:
+	int		id;
+	char	name[16];
+	Item	*item;	
+	int		gold;
+};
+
 class Player {
 public:
 	char	name[16];
@@ -42,7 +50,7 @@ public:
 	Player(t_packet *p);
 };
 
-namespace HeroShell
+namespace Hunters_Online
 {
 	class	Client
 	{
@@ -52,9 +60,9 @@ namespace HeroShell
 		int	sendPacket(char *id, char *command, char **data);
 		int	sendChat(char *msg, size_t len, bool whisper, char *dst);
 		int	initDB();
-		void	recvItemList(std::map<int, Item *> *l, t_packet *h);
+		t_packet	*recvItemList(std::map<int, Item *> *l, t_packet *h, int type);
 		int	updateDisplay(WINDOW *win, int new_state);
-		void	recvUserList(std::map<int, Player *> *l, t_packet *h);
+		t_packet	*recvUserList(std::map<int, Player *> *l, t_packet *h);
 		std::string	constructItemNameStr(Item *i);
 		std::string	finalAuraInfoString(Aura *a, Item *i, int idx);
 
@@ -64,6 +72,7 @@ namespace HeroShell
 		std::map<int, ItemBase *>	item_base;
 		std::map<int, Aura *>		auras;
 		std::map<int, Player *>		plist;
+		std::map<int, Auction *>	auctions;
 		int					state;
 		int					last_state;
 		bool				eq_empty;
@@ -82,9 +91,9 @@ namespace HeroShell
 
 typedef struct	s_thread_data
 {
-	HeroShell::Client	*cli;
-	HeroShell::Screen	*scr;
-	HeroShell::PlayerAvg	*plr;
+	Hunters_Online::Client	*cli;
+	Hunters_Online::Screen	*scr;
+	Hunters_Online::PlayerAvg	*plr;
 }				t_thread_data;
 
 int		unpad(char *str);

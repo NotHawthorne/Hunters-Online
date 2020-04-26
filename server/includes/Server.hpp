@@ -33,6 +33,14 @@
 # define DB_PATH "./db/users.db"
 # define SQL_FIND_USER(user) std::string(std::string("SELECT * from users WHERE name=\"") + std::string(user) + std::string("\";")).c_str()
 
+class	Auction {
+public:
+	int		id;
+	char	name[16];
+	Item	*item;
+	int		gold;
+};
+
 class	Server {
 public:
 	Server();
@@ -60,6 +68,9 @@ public:
 	int		updateEquipment(Player *p);
 	int		loadEquip();
 	int		sendPlayerList(t_packet *pack, Player *p);
+	int		loadAuctions();
+	int		addAuction(t_packet *pack);
+	int		removeAuction(t_packet *pack);
 
 	int								sock;
 	fd_set							active_fd_set;
@@ -67,6 +78,7 @@ public:
 	std::map<std::string, Player *>	players;
 	std::map<int, Item *>			items;
 	std::map<int, ItemBase *>		item_bases;
+	std::map<int, Auction *>		auctions;
 	std::map<int, Aura *>			auras;
 	struct sockaddr_in				servaddr;
 	sqlite3							*db;

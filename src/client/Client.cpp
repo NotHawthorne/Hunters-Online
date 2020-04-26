@@ -1,6 +1,6 @@
 #include "../../includes/client.h"
 
-int	HeroShell::Client::sendPacket(char *id, char *command,
+int	Hunters_Online::Client::sendPacket(char *id, char *command,
 									char **data)
 {
 	t_packet	p;
@@ -16,7 +16,7 @@ int	HeroShell::Client::sendPacket(char *id, char *command,
 	return (1);
 }
 
-std::string	HeroShell::Client::constructItemNameStr(Item *i)
+std::string	Hunters_Online::Client::constructItemNameStr(Item *i)
 {
 	std::string	item_name(item_base[i->base_id]->name);
 	int	pre = 0;
@@ -42,7 +42,7 @@ std::string	HeroShell::Client::constructItemNameStr(Item *i)
 	return (ret);
 }
 
-int	HeroShell::Client::updateDisplay(WINDOW *win, int new_state)
+int	Hunters_Online::Client::updateDisplay(WINDOW *win, int new_state)
 {
 	if (state == last_state)
 		return (0);
@@ -171,7 +171,7 @@ int	HeroShell::Client::updateDisplay(WINDOW *win, int new_state)
 	return (1);
 }
 
-int	HeroShell::Client::sendChat(char *data, size_t len, bool whisper, char *dst)
+int	Hunters_Online::Client::sendChat(char *data, size_t len, bool whisper, char *dst)
 {
 	t_packet	p;
 	int			x = 0;
@@ -200,7 +200,7 @@ int	HeroShell::Client::sendChat(char *data, size_t len, bool whisper, char *dst)
 	return (1);
 }
 
-void	HeroShell::Client::recvItemList(std::map<int, Item *> *l, t_packet *h)
+t_packet	*Hunters_Online::Client::recvItemList(std::map<int, Item *> *l, t_packet *h, int type)
 {
 	int	amt = std::atoi(h->data[0]);
 	int i = 0;
@@ -222,15 +222,21 @@ void	HeroShell::Client::recvItemList(std::map<int, Item *> *l, t_packet *h)
 				rbytes += tmp;
 		}
 		p = (t_packet *)&data;
+		if (rbytes == sizeof(t_packet) && strcmp(p->command, "ITEM") != 0)
+		{
+			return (NULL); // fuck memory allocation i guess it just wont fucking work as a
+							// return value that i can free later
+		}
 
 		Item	*ite = new Item(p);
-		l->insert(std::pair<int, Item *>(l->size(), ite));
+		l->insert(std::pair<int, Item *>(type == 1 ? item_base[ite->base_id]->slot : l->size(), ite));
 		i++;
 		usleep(5);
 	}
+	return (NULL);
 }
 
-void	HeroShell::Client::recvUserList(std::map<int, Player *> *l, t_packet *h)
+t_packet	*Hunters_Online::Client::recvUserList(std::map<int, Player *> *l, t_packet *h)
 {
 	int	amt = std::atoi(h->data[0]);
 	int i = 0;
@@ -252,15 +258,23 @@ void	HeroShell::Client::recvUserList(std::map<int, Player *> *l, t_packet *h)
 				rbytes += tmp;
 		}
 		p = (t_packet *)&data;
-
+		if (rbytes == sizeof(t_packet) && strcmp(p->command, "PLAYER") != 0)
+		{
+			printf("%s\n", p->command);
+			//t_packet	*ret = (t_packet*)malloc(sizeof(t_packet));
+			//memcpy(&ret, data, sizeof(t_packet)); SEE ABOVE
+			return (NULL);
+		}
+		printf("HI I GUESS\n");
 		Player	*np = new Player(p);
 		l->insert(std::pair<int, Player *>(l->size(), np));
 		i++;
 		usleep(5);
 	}
+	return (NULL);
 }
 
-HeroShell::Client::Client()
+Hunters_Online::Client::Client()
 {
 	int		ret;
 	std::string	pass_hash;
@@ -308,7 +322,7 @@ static int	auras_load_callback(void *d, int argc, char **argv, char **colname)
 	return (0);
 }
 
-int	HeroShell::Client::initDB()
+int	Hunters_Online::Client::initDB()
 {
 	std::string iq = "SELECT * FROM item_base;";
 	std::string	aq = "SELECT * FROM auras;";
@@ -326,12 +340,12 @@ int	HeroShell::Client::initDB()
 	return (1);
 }
 
-HeroShell::Client::~Client()
+Hunters_Online::Client::~Client()
 {
 	close(conn_fd);
 }
 
-std::string	HeroShell::Client::finalAuraInfoString(Aura *a, Item *i, int idx)
+std::string	Hunters_Online::Client::finalAuraInfoString(Aura *a, Item *i, int idx)
 {
 	std::string	info("");
 	if (a->proc_rate)

@@ -12,7 +12,7 @@
 
 #include <list> // for the previous data (dps calculation)
 
-# define WELCOME_MSG "Welcome to HeroShell!\nThis is your main display port, where your various windows (inventory, auction house, etc.) will appear.\nIf you are confused, type 'help'.\nEnjoy the realm!\n"
+# define WELCOME_MSG "Welcome to Hunters Online!\nThis is your main display port, where your various windows (inventory, auction house, etc.) will appear.\nIf you are confused, type 'help'.\nEnjoy the realm!\n"
 
 enum	PlayerData
 {
@@ -20,7 +20,7 @@ enum	PlayerData
 	EXP
 };
 
-namespace HeroShell
+namespace Hunters_Online
 {
 	class	PlayerAvg
 	{
