@@ -123,6 +123,7 @@ int	Player::tick(Server *s)
 Player::Player()
 {
 	packet_queue = new PacketQueue();
+	fr = NULL;
 }
 
 Player::~Player()
