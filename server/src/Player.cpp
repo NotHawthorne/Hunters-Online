@@ -107,6 +107,7 @@ int	Player::tick(Server *s)
 	fr->dmg = 0;
 	fr->strbuff = 0;
 	fr->dexbuff = 0;
+	fr->intbuff = 0;
 	fr->lifesteal_amt = 0;
 	fr->heal_amt = 0;
 	fr->armor_mit = 0;
