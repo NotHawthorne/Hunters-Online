@@ -331,6 +331,7 @@ static int	playerLoad(void *d, int argc, char **argv, char **colName)
 	pl->exp = std::atoi(argv[12]);
 	pl->gold_exponent = std::atoi(argv[13]);
 	pl->fd = -1;
+	pl->access = std::atoi(argv[14]);
 	ret->insert(std::pair<std::string, Player *>(std::string(argv[0]), pl));
 	return (0);
 }
@@ -653,6 +654,11 @@ int	Server::processPacket(t_packet *pack, int nfd)
 		}
 		else
 			notify(p, string_format("User %s is offline.", pack->data[0]), SYSTEM);
+		return (1);
+	}
+	else if (cmd.compare("GEN_ITEM") == 0 && p->access > 0)
+	{
+		grantItem(p, genItem(std::atoi(pack->data[0])));
 		return (1);
 	}
 	else if (cmd.compare("EQUIP") == 0)

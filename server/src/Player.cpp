@@ -125,6 +125,7 @@ Player::Player()
 {
 	packet_queue = new PacketQueue();
 	fr = NULL;
+	access = 0;
 }
 
 Player::~Player()
