@@ -70,8 +70,10 @@ void	*listener(void *ptr)
 				}
 				else
 				{
+					time_t	timeval;
+					timeval = time(0);
 					wattron(d->scr->chat, COLOR_PAIR(res ? 1 : 3));
-					wprintw(d->scr->chat, "%s: %s\n", p->id, st.c_str());
+					wprintw(d->scr->chat, "[%.19s] %s: %s\n", ctime(&timeval), p->id, st.c_str());
 					wattron(d->scr->chat, COLOR_PAIR(1));
 					wrefresh(d->scr->chat);
 				}
