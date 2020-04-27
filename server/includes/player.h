@@ -69,6 +69,8 @@ public:
 
 	int		tick(Server *s);
 
+	int		access;
+
 	t_combat_frame	*fr;
 	Player();
 	~Player();

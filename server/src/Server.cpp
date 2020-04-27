@@ -667,7 +667,7 @@ int	Server::processPacket(t_packet *pack, int nfd)
 			return (1);
 		Item		*x = items[atoi(pack->data[0])];
 		ItemBase	*y = item_bases[x->base_id];
-		printf("equipping %s to %s\n", y->name, p->name);
+		printf("equipping %s to %s, slot %d\n", y->name, p->name, y->slot);
 		if (p->inventory.find(x->instance_id) != p->inventory.end())
 		{
 			if (p->equip.find(y->slot) != p->equip.end())
