@@ -172,6 +172,8 @@ Item	*Server::genItem(int level)
 	int		rarity = 1;
 
 	for (rarity = 1; rand() % rarity == 0; rarity++);
+	int		roll = rand() % item_bases.size();
+	printf("roll: %d\n", roll);
 	ItemBase	*ti = item_bases[(rand() % item_bases.size())];
 	Aura	*ta = auras[(rand() % auras.size()) + 1];
 
@@ -659,6 +661,7 @@ int	Server::processPacket(t_packet *pack, int nfd)
 	else if (cmd.compare("GEN_ITEM") == 0 && p->access > 0)
 	{
 		grantItem(p, genItem(std::atoi(pack->data[0])));
+		sendItemList(p, &p->inventory, 0);
 		return (1);
 	}
 	else if (cmd.compare("EQUIP") == 0)
