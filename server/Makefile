@@ -14,10 +14,13 @@ NAME = server
 
 SRC = src/Packet.cpp src/Aura.cpp src/Item.cpp src/Server.cpp src/Player.cpp src/main.cpp
 OBJ = $(patsubst %.cpp,%.o,$(SRC))
+DEBUGDEFINES := -D_DEBUG
 
 CXX = g++
 CXXFLAGS = -Iincludes -lpthread -lsqlite3 -g -fsanitize=address
 
+debug: CFLAGS += -D_DEBUG
+debug: re
 
 all: $(NAME)
 

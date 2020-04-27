@@ -26,7 +26,11 @@
 # include "item.h"
 # include "config.h"
 
-# define PORT 4242
+# ifdef _DEBUG
+#  define PORT 4243
+# else
+#  define PORT 4242
+# endif
 # define MAXMSG 512
 
 # define REGISTER "reg"

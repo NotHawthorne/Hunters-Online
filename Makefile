@@ -9,6 +9,7 @@ LIBS := -lncurses -lform -lpthread -lsqlite3
 #CXXFLAGS := -Iincludes -Wall -Werror -Wextra -g
 CXXFLAGS := -Iincludes -g #-fsanitize=address
 MODNAME := module.mk
+DEBUGDEFINES := -D_DEBUG
 SRC :=
 
 include $(patsubst %,%/$(MODNAME),$(MODULES))
@@ -17,6 +18,9 @@ OBJ :=  $(patsubst %.cpp,%.o,$(filter %.cpp,$(SRC)))
 DEP :=	$(patsubst %.cpp,%.d,$(filter %.cpp,$(SRC)))
 
 -include $(DEP)
+
+debug: CXXFLAGS += -D_DEBUG 
+debug: re
 
 $(NAME): $(OBJ)
 	@$(CC) $(CXXFLAGS) $(OBJ) $(LIBS) -o $@
@@ -38,6 +42,7 @@ clean_nolib:
 
 fclean: clean_nolib
 	rm -f $(NAME)
+	
 
 re: fclean all
 
