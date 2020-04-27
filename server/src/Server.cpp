@@ -172,13 +172,13 @@ Item	*Server::genItem(int level)
 	int		rarity = 1;
 
 	for (rarity = 1; rand() % rarity == 0; rarity++);
-	ItemBase	*ti = item_bases[(rand() % item_bases.size()) + 1];
+	ItemBase	*ti = item_bases[(rand() % item_bases.size())];
 	Aura	*ta = auras[(rand() % auras.size()) + 1];
 
 	ni->instance_id = items.size();
 	printf("instance id: %d\n", ni->instance_id);
 	while (ti->level > level)
-		ti = item_bases[(rand() % item_bases.size()) + 1];
+		ti = item_bases[(rand() % item_bases.size())];
 	ni->base_id = ti->id;
 	int		auras_ = (rand() % 5);
 	bzero(ni->enchants, sizeof(int) * 5);
