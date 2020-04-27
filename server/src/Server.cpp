@@ -677,6 +677,7 @@ int	Server::processPacket(t_packet *pack, int nfd)
 			{
 				printf("currently equipped: %s\n", item_bases[p->equip.find(y->slot)->second->base_id]->name);
 				grantItem(p, p->equip.find(y->slot)->second);
+				p->equip.erase(y->slot);
 			}
 			removeItem(p, x);
 			p->equip.insert(std::pair<int, Item *>(y->slot, x));
