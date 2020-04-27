@@ -213,7 +213,6 @@ int		Server::grantItem(Player *p, Item *i)
 	int res = sqlite3_exec(db, q.c_str(), NULL, 0, NULL);
 	if (res != SQLITE_OK)
 		printf("error granting item\n");
-	notify(p, string_format("You've found a %s!", item_bases[i->base_id]->name), NOTIFY);
 	return (1);
 }
 
@@ -297,6 +296,7 @@ int	Server::awardKill(Player *p)
 		{
 			grantItem(p, genItem(p->lvl));
 			sendItemList(p, &p->inventory, 0);
+			notify(p, string_format("You've found a %s!", item_bases[i->base_id]->name), NOTIFY);
 		}
 	}
 	return (1);

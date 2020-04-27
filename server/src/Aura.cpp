@@ -18,6 +18,7 @@ int		Aura::process(Player *p, Item *i, std::map<int, ItemBase*> *bases,
 	int		proc = 1;
 	if (proc_rate && (rand() % 100) > proc_rate)
 		return (1);
+	int		tot = 0;
 	switch (enchant)
 	{
 		case PHYS_DMG:
@@ -50,11 +51,12 @@ int		Aura::process(Player *p, Item *i, std::map<int, ItemBase*> *bases,
 			stackdmg = (int)((val + p->intel) * (scale / 100.0)) + 1;
 			for (int i = 0; i != p->mon.count; i++)
 			{
+				tot += stackdmg;
 				cb_frame->dmg += stackdmg;
 				stackdmg /= 3;
 			}
 			if (proc_rate)
-				proc = stackdmg;
+				proc = tot;
 			break ;
 		case LIFESTEAL:
 			cb_frame->lifesteal_amt += (int)(val * (scale / 100.0)) + 1;

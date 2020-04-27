@@ -1,5 +1,17 @@
 # patch notes
 ---
+# 7:03 PM, Apr 27
+## general
+- equipment/equipping was fundamentally broken on all counts, and now works fully :)
+- added admin/debug command for generating items
+- combat is now much more verbose, returning information about procs, encounters, and monster health
+## server
+- changed item drop formula from `rand() % (100 - monster_level)` to `rand() % (100 - ((monster_level / 20) + 5)) * monster_count;
+- fixed new players not spawning with correct database entries
+- changed the way notifications happen for grantItem
+## client
+- removed einspect from help text
+---
 # 12:56 AM, Apr 27
 ## client
 - added timestamps for messages

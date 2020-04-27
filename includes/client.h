@@ -24,6 +24,7 @@
 #define _ADDRESS "127.0.0.1"
 #define PORT 4242
 #define _PORT 4243
+#define VER "0.1.2"
 
 enum display_states
 {
