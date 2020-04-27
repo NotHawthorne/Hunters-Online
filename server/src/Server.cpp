@@ -232,9 +232,9 @@ static int	load_equip_callback(void *d, int argc, char **argv, char **colname)
 	Server *s = (Server *)d;
 	Player	*p = s->players[std::string(argv[0])];
 
-	for (int i = 1; i != 13; i++)
-		if (std::atoi(argv[i]) > 0)
-			p->equip[i] = s->items[std::atoi(argv[i])];
+	for (int i = 0; i + 1 != argc; i++)
+		if (std::atoi(argv[i + 1]) > 0)
+			p->equip[i] = s->items[std::atoi(argv[i + 1])];
 	return (0);
 }
 
@@ -276,7 +276,7 @@ int	Server::awardKill(Player *p)
 	p->exp += e;
 	p->gold += g;
 	notify(p, string_format("You've killed some monsters, gaining %d gold and %d experience.", g, e), LOG);
-	if (p->exp >= (p->lvl * 1000))
+	if (p->exp >= (p->lvl * 1000) && p->lvl < 100)
 	{
 		p->lvl++;
 		p->max_hp += 20;
@@ -289,10 +289,13 @@ int	Server::awardKill(Player *p)
 		p->exp -= (p->lvl - 1) * 1000;
 		notify(p, string_format("You've reached level %d!\n", p->lvl), NOTIFY);
 	}
-	if (rand() % (100 - p->lvl) == 0)
+	for (int i = 0; i != p->mon.count; i++)
 	{
-		grantItem(p, genItem(p->lvl));
-		sendItemList(p, &p->inventory, 0);
+		if (rand() % (100 - ((p->lvl / 10) + 5)) == 0)
+		{
+			grantItem(p, genItem(p->lvl));
+			sendItemList(p, &p->inventory, 0);
+		}
 	}
 	return (1);
 }
@@ -658,8 +661,10 @@ int	Server::processPacket(t_packet *pack, int nfd)
 			return (1);
 		Item		*x = items[atoi(pack->data[0])];
 		ItemBase	*y = item_bases[x->base_id];
+		printf("equipping %s to %s\n", y->name, p->name);
 		if (p->inventory.find(x->instance_id) != p->inventory.end())
 		{
+			printf("currently equipped: %s\n", item_bases[p->equip.find(y->slot)->second->base_id]->name);
 			if (p->equip.find(y->slot) != p->equip.end())
 				grantItem(p, p->equip.find(y->slot)->second);
 			removeItem(p, x);
