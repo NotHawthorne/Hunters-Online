@@ -664,9 +664,11 @@ int	Server::processPacket(t_packet *pack, int nfd)
 		printf("equipping %s to %s\n", y->name, p->name);
 		if (p->inventory.find(x->instance_id) != p->inventory.end())
 		{
-			printf("currently equipped: %s\n", item_bases[p->equip.find(y->slot)->second->base_id]->name);
 			if (p->equip.find(y->slot) != p->equip.end())
+			{
+				printf("currently equipped: %s\n", item_bases[p->equip.find(y->slot)->second->base_id]->name);
 				grantItem(p, p->equip.find(y->slot)->second);
+			}
 			removeItem(p, x);
 			p->equip.insert(std::pair<int, Item *>(y->slot, x));
 			sendItemList(p, &p->inventory, 0);
