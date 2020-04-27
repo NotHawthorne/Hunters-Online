@@ -30,7 +30,19 @@ int	Player::tick(Server *s)
 		{
 			for (int i = 0; i != 5 && it->second->enchants[i]; i++)
 			{
-				s->auras[it->second->enchants[i]]->process(this, it->second, &s->item_bases, fr, it->second->scale[i]);
+				int ret = 0;
+				if ((ret = s->auras[it->second->enchants[i]]->process(this, it->second, &s->item_bases, fr, it->second->scale[i])) > 1)
+				{
+					switch (s->auras[it->second->enchants[i]]->enchant)
+					{
+						case CHAIN_LIGHTNING:
+							s->notify(this, string_format("Chain lightning strikes your enemies for %d damage!", ret), LOG);
+							break ;
+						case HEAL:
+							s->notify(this, string_format("You are healed for %d!", ret), LOG);
+							break ;
+					}
+				}
 				/*
 				if (s->auras[it->second->enchants[i]]->enchant == PHYS_DMG)
 					dmg += it->second->scale[i];
@@ -64,7 +76,7 @@ int	Player::tick(Server *s)
 	if (mon.hp > 0 && fd > 0)
 	{
 		mon.hp -= fr->dmg + ((str + fr->strbuff) / 2);
-		s->notify(this, string_format("You deal %d damage to the monsters!", fr->dmg + ((str + fr->strbuff) / 2)), LOG);
+		s->notify(this, string_format("You deal %d damage to the monsters! (%d / %d)", fr->dmg + ((str + fr->strbuff) / 2)), mon.hp, mon.max_hp, LOG);
 		hp -= (mon.dmg - (armor_mit / 20));
 		s->notify(this, string_format("You take %d damage.", mon.dmg - (armor_mit / 20)), LOG);
 		if (fr->lifesteal_amt)
@@ -77,9 +89,11 @@ int	Player::tick(Server *s)
 	{
 		mon.count = (rand() % 3) + 1;
 		mon.hp = ((10 * lvl) * mon.count) * 3;
+		mon.max_hp = hp;
 		mon.level = lvl;
 		mon.dmg = (lvl * 2) * mon.count;
 		kill = 1;
+		s->notify(this, string_format("You are attacked by %d monsters! (%d / %d)", mon.count, mon.hp, mon.max_hp), LOG);
 	}
 	if (hp <= 0)
 	{

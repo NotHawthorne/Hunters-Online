@@ -331,8 +331,20 @@ int		parse(char *str, Hunters_Online::Client *cli, Hunters_Online::Screen *scr)
 				wprintw(scr->log, "no help available for %s\n", tokens[1].c_str());
 		}
 		else
-			wprintw(scr->log, "available commands:\nbuy | inspect {inventory slot} | einspect {equipment slot name} | message [pm/tell/whisper] | view {inventory, equipment/auctions} | players\n");
+			wprintw(scr->log, "available commands:\nbuy | inspect {inventory slot/equipment slot name} | message/pm/tell/whisper | view {inventory/equipment/auctions} | players\n");
 		wrefresh(scr->log);
+		return (1);
+	}
+	else if (cmd.compare(std::string("genitem")) == 0)
+	{
+		t_packet	p;
+		bzero(p.id, 16);
+		bzero(p.command, 16);
+		bzero(p.data[0], 16);
+		memcpy(p.id, cli->name, strlen(cli->name));
+		memcpy(p.command, "GEN_ITEM", 16);
+		memcpy(p.data[0], tokens[1].c_str(), tokens[1].size());
+		write(cli->conn_fd, &p, sizeof(t_packet));
 		return (1);
 	}
 	else if (cmd.compare(std::string("players")) == 0)

@@ -28,6 +28,7 @@ public:
 	int		id;
 	int		level;
 	int		hp;
+	int		max_hp;
 	int		dmg;
 	int		armor;
 	int		count;

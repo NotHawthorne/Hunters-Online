@@ -15,6 +15,7 @@ int		Aura::process(Player *p, Item *i, std::map<int, ItemBase*> *bases,
 							t_combat_frame *cb_frame, int scale)
 {
 	int		stackdmg = 0;
+	int		proc = 0;
 	if (proc_rate && (rand() % 100) > proc_rate)
 		return (1);
 	switch (enchant)
@@ -42,6 +43,8 @@ int		Aura::process(Player *p, Item *i, std::map<int, ItemBase*> *bases,
 			break ;
 		case HEAL:
 			cb_frame->heal_amt += (int)((val + p->intel) * (scale / 100.0)) + 1;
+			if (proc_rate)
+				proc = cb_frame->heal_amt;
 			break ;
 		case CHAIN_LIGHTNING:
 			stackdmg = (int)((val + p->intel) * (scale / 100.0)) + 1;
@@ -50,6 +53,8 @@ int		Aura::process(Player *p, Item *i, std::map<int, ItemBase*> *bases,
 				cb_frame->dmg += stackdmg;
 				stackdmg /= 3;
 			}
+			if (proc_rate)
+				proc = stackdmg;
 			break ;
 		case LIFESTEAL:
 			cb_frame->lifesteal_amt += (int)(val * (scale / 100.0)) + 1;
