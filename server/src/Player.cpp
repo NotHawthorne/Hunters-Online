@@ -76,7 +76,7 @@ int	Player::tick(Server *s)
 	if (mon.hp > 0 && fd > 0)
 	{
 		mon.hp -= fr->dmg + ((str + fr->strbuff) / 2);
-		s->notify(this, string_format("You deal %d damage to the monsters! (%d / %d)", fr->dmg + ((str + fr->strbuff) / 2), mon.hp, mon.max_hp) LOG);
+		s->notify(this, string_format("You deal %d damage to the monsters! (%d / %d)", fr->dmg + ((str + fr->strbuff) / 2), mon.hp, mon.max_hp), LOG);
 		hp -= (mon.dmg - (armor_mit / 20));
 		s->notify(this, string_format("You take %d damage.", mon.dmg - (armor_mit / 20)), LOG);
 		if (fr->lifesteal_amt)

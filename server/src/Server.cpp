@@ -294,9 +294,10 @@ int	Server::awardKill(Player *p)
 	{
 		if (rand() % (100 - ((p->lvl / 10) + 5)) == 0)
 		{
-			grantItem(p, genItem(p->lvl));
+			Item *ite = genItem(p->lvl);
+			grantItem(p, ite);
 			sendItemList(p, &p->inventory, 0);
-			notify(p, string_format("You've found a %s!", item_bases[i->base_id]->name), NOTIFY);
+			notify(p, string_format("You've found a %s!", item_bases[ite->base_id]->name), NOTIFY);
 		}
 	}
 	return (1);
