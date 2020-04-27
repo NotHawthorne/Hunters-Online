@@ -170,7 +170,7 @@ static char	*Item_Slot_String[13] = {
 	"Neck",
 	"Finger1",
 	"Finger2",
-	"Main Hand",
+	"Main-Hand",
 	"Off-Hand"
 };
 

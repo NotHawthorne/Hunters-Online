@@ -131,6 +131,14 @@ void	*listener(void *ptr)
 	return (NULL);
 }
 
+std::string	lowify(char *in)
+{
+	std::string ret("");
+	for (int i = 0; i != strlen(in); i++)
+		ret += in[i] >= 'A' && in[i] <= 'Z' ? in[i] + 32 : in[i];
+	return (ret);
+}
+
 int		parse(char *str, Hunters_Online::Client *cli, Hunters_Online::Screen *scr)
 {
 	std::string	s(str);
@@ -212,7 +220,7 @@ int		parse(char *str, Hunters_Online::Client *cli, Hunters_Online::Screen *scr)
 				cmd.compare(std::string("message")) == 0 ||
 				cmd.compare(std::string("pm")) == 0)
 	{
-		if (tokens.size() <= 3)
+		if (tokens.size() < 3)
 			return (0);
 		std::string	dest(tokens[1]);
 		std::string	msg(tokens[2]);
@@ -239,13 +247,29 @@ int		parse(char *str, Hunters_Online::Client *cli, Hunters_Online::Screen *scr)
 	{
 		if (tokens.size() < 2)
 			return (0);
-		cli->inspect_slot = std::atoi(tokens[1].c_str());
+		if (tokens[1][0] >= '0' && tokens[1][0] <= '9')
+			cli->inspect_slot = std::atoi(tokens[1].c_str());
+		else
+			cli->inspect_slot = 0;
+		int einspect = cli->inspect_slot <= 0 ? 1 : 0;
+		if (cli->inspect_slot <= 0)
+		{
+			for (int i = 0; i != 13; i++)
+			{
+				if (tokens[1].compare(lowify(Item_Slot_String[i])) == 0)
+				{
+					printf("SLOT %d\n", i);
+					cli->inspect_slot = i;
+					break ;
+				}
+			}
+		}
 		cli->last_state = -1;
-		cli->state = INSPECT;
-		cli->updateDisplay(scr->display, INSPECT);
+		cli->state = einspect ? EINSPECT : INSPECT;
+		cli->updateDisplay(scr->display, einspect ? EINSPECT : INSPECT);
 		return (1);
 	}
-	else if (cmd.compare(std::string("einspect")) == 0)
+	/*else if (cmd.compare(std::string("einspect")) == 0)
 	{
 		if (tokens.size() < 2)
 			return (0);
@@ -254,7 +278,7 @@ int		parse(char *str, Hunters_Online::Client *cli, Hunters_Online::Screen *scr)
 		cli->state = EINSPECT;
 		cli->updateDisplay(scr->display, EINSPECT);
 		return (1);
-	}
+	}*/
 	else if (cmd.compare(std::string("drop")) == 0)
 	{
 		wprintw(scr->log, "You tried to set it down, but as soon as you turned around you found it in your hand again.\n");
@@ -278,9 +302,7 @@ int		parse(char *str, Hunters_Online::Client *cli, Hunters_Online::Screen *scr)
 				return (1);
 		}
 		else
-		{
 			slot = std::stoi(tokens[1]);
-		}
 		if (slot < 0 || slot >= cli->inventory.size())
 			return (1);
 		std::string	des = std::to_string(cli->inventory[slot]->instance_id);
@@ -309,7 +331,7 @@ int		parse(char *str, Hunters_Online::Client *cli, Hunters_Online::Screen *scr)
 				wprintw(scr->log, "no help available for %s\n", tokens[1].c_str());
 		}
 		else
-			wprintw(scr->log, "available commands:\nbuy, inspect, message [pm/tell/whisper], view\n"); 
+			wprintw(scr->log, "available commands:\nbuy | inspect {inventory slot} | einspect {equipment slot name} | message [pm/tell/whisper] | view {inventory, equipment/auctions} | players\n");
 		wrefresh(scr->log);
 		return (1);
 	}
@@ -381,7 +403,11 @@ int		main(int argc, char **argv)
 					form_driver(scr.form, REQ_NEXT_CHAR);
 					break ;
 				case KEY_BACKSPACE:
-					form_driver(scr.form, REQ_DEL_CHAR);
+					form_driver(scr.form, REQ_VALIDATION);
+					buf = field_buffer(scr.input[0], 0);
+					buf[unpad(buf)] = 0;
+					if (strlen(buf) > 1)
+						form_driver(scr.form, REQ_DEL_PREV);
 					break ;
 				default:
 					break ;
@@ -395,7 +421,9 @@ int		main(int argc, char **argv)
 					return (0);
 					break ;
 				case 127:
+					form_driver(scr.form, REQ_VALIDATION);
 					buf = field_buffer(scr.input[0], 0);
+					buf[unpad(buf)] = 0;
 					if (strlen(buf) > 1)
 						form_driver(scr.form, REQ_DEL_PREV);
 					break ;

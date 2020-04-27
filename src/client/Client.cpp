@@ -101,9 +101,10 @@ int	Hunters_Online::Client::updateDisplay(WINDOW *win, int new_state)
 			wprintw(win, "empty");
 			break ;
 		case EINSPECT:
-			if (inspect_slot >= equipment.size())
+			if (inspect_slot >= 13 || (it_eq = equipment.find(inspect_slot)) == equipment.end())
 				break ;
-			std::advance(it_eq, inspect_slot);
+			it_eq = equipment.find(inspect_slot);
+			//std::advance(it_eq, inspect_slot);
 			wattron(win, COLOR_PAIR((it_eq->second->rarity + 3) > SPECIAL ? SPECIAL : (it_eq->second->rarity + 3)));
 			wprintw(win, "[%s] (Equipped)\n", constructItemNameStr(it_eq->second).c_str());
 			wattron(win, COLOR_PAIR(COMMON));
