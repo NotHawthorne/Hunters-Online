@@ -89,7 +89,7 @@ int	Player::tick(Server *s)
 	{
 		mon.count = (rand() % 3) + 1;
 		mon.hp = ((10 * lvl) * mon.count) * 3;
-		mon.max_hp = hp;
+		mon.max_hp = mon.hp;
 		mon.level = lvl;
 		mon.dmg = (lvl * 2) * mon.count;
 		kill = 1;

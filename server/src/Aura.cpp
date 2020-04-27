@@ -15,7 +15,7 @@ int		Aura::process(Player *p, Item *i, std::map<int, ItemBase*> *bases,
 							t_combat_frame *cb_frame, int scale)
 {
 	int		stackdmg = 0;
-	int		proc = 0;
+	int		proc = 1;
 	if (proc_rate && (rand() % 100) > proc_rate)
 		return (1);
 	switch (enchant)
@@ -60,7 +60,7 @@ int		Aura::process(Player *p, Item *i, std::map<int, ItemBase*> *bases,
 			cb_frame->lifesteal_amt += (int)(val * (scale / 100.0)) + 1;
 			break ;
 	}
-	return (1);
+	return (proc);
 }
 
 int		Aura::proc(Player *p, Monster *m, int scale)
