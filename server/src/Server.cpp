@@ -436,7 +436,7 @@ int	Server::loadAuras()
 int	Server::newPlayer(t_packet *pack, int nfd)
 {
 	Player	*pl = new Player();
-	std::string	q = string_format("INSERT INTO equip(name, head, shoulders, chest, legs, feet, hands, wrists, waist, neck, finger1, finger2, main_hand, off_hand) VALUES (\"%s\", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0); INSERT INTO users (name, pass) VALUES (\"%s\", \"%s\"); INSERT INTO stats (name, gold, hunters, str, intel, dex, hp, max_hp, mana, max_mana, groupid, lvl, exp) VALUES (\"%s\", 100, 1, 10, 10, 10, 100, 100, 100, 100, 0, 1, 0);", pack->id, pack->id, pack->data[0], pack->id);
+	std::string	q = string_format("INSERT INTO equip(name, head, shoulders, chest, legs, feet, hands, wrists, waist, neck, finger1, finger2, main_hand, off_hand) VALUES (\"%s\", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0); INSERT INTO users (name, pass) VALUES (\"%s\", \"%s\"); INSERT INTO stats (name, gold, hunters, str, intel, dex, hp, max_hp, mana, max_mana, groupid, lvl, gold_exponent, exp, access) VALUES (\"%s\", 100, 1, 10, 10, 10, 100, 100, 100, 100, 0, 1, 0, 0, 0);", pack->id, pack->id, pack->data[0], pack->id);
 
 	int rc = sqlite3_exec(db, q.c_str(), NULL, 0, NULL);
 	if (rc != SQLITE_OK)
