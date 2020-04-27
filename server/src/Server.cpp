@@ -174,7 +174,7 @@ Item	*Server::genItem(int level)
 	for (rarity = 1; rand() % rarity == 0; rarity++);
 	int		roll = rand() % item_bases.size();
 	printf("roll: %d\n", roll);
-	ItemBase	*ti = item_bases[(rand() % item_bases.size())];
+	ItemBase	*ti = item_bases[roll];
 	Aura	*ta = auras[(rand() % auras.size()) + 1];
 
 	ni->instance_id = items.size();
