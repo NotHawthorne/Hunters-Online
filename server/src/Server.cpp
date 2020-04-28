@@ -61,8 +61,10 @@ int	Server::notify(Player *p, std::string info, int level)
 	memcpy(pa->id, "SERVER\0", 7);
 	memcpy(pa->command, "NOTIFY\0", 7);
 	d = info.c_str();
-	memcpy(pa->data[0], s.c_str(), s.size() + 1);
-	memcpy(pa->data[1], std::to_string(level).c_str(), std::to_string(level).size() + 1);
+	bzero(pa->data[0], 16);
+	bzero(pa->data[1], 16);
+	memcpy(pa->data[0], s.c_str(), s.size());
+	memcpy(pa->data[1], std::to_string(level).c_str(), std::to_string(level).size());
 	for (int i = 0; i < (int)info.size() && x < 30; i+= 15)
 	{
 		bzero(pa->data[x], 16);
@@ -603,12 +605,14 @@ int	Server::processPacket(t_packet *pack, int nfd)
 
 	if (cmd.compare("BUY_HUNTER") == 0)
 	{
+		/*
 		int	amt = atoi(pack->data[0]);
 		if (p->gold >= (100 * amt))
 		{
 			p->gold -= (100 * amt);
 			p->hunters += amt;
-		}
+		}*/
+		notify(p, std::string("Hunter buying is in the process of being removed from the game, in favor of more complex encounters."), SYSTEM);
 		return (1);
 	}
 	else if (cmd.compare("CHAT") == 0)
