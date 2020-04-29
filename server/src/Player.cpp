@@ -78,10 +78,14 @@ int	Player::tick(Server *s)
 		if (!fr->next_tick)
 		{
 			mon.hp -= fr->dmg + ((str + fr->strbuff) / 2);
+			mon.hp = mon.hp <= 0 ? 0 : mon.hp;
 			s->notify(this, string_format("You deal %d damage to the monsters! (%d / %d)", fr->dmg + ((str + fr->strbuff) / 2), mon.hp, mon.max_hp), LOG);
 		}
-		hp -= (mon.dmg - (armor_mit / 20));
-		s->notify(this, string_format("You take %d damage.", mon.dmg - (armor_mit / 20)), LOG);
+		if (!fr->ko)
+		{
+			hp -= (mon.dmg - (armor_mit / 20));
+			s->notify(this, string_format("You take %d damage.", mon.dmg - (armor_mit / 20)), LOG);
+		}
 		if (fr->lifesteal_amt && !fr->next_tick)
 		{
 			s->notify(this, string_format("You stole %d health.", fr->lifesteal_amt), LOG);
@@ -105,6 +109,8 @@ int	Player::tick(Server *s)
 		exp /= 2;
 		mana = max_mana;
 		dead = 1;
+		fr->next_tick += 10;
+		fr->ko = true;
 	}
 	if (hp < (max_hp + fr->max_hp_mod))
 		hp++;
@@ -118,6 +124,8 @@ int	Player::tick(Server *s)
 	max_hp += fr->max_hp_mod;
 	if (fr->next_tick)
 		fr->next_tick--;
+	if (!fr->next_tick)
+		fr->ko = false;
 	s->sendStatus(this);
 	str -= fr->strbuff;
 	dex -= fr->dexbuff;
