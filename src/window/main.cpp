@@ -6,6 +6,8 @@
 
 extern Hunters_Online::Screen *mainscr;
 
+static int req_exit = 0;
+
 int		unpad(char *str)
 {
 	int last = 0;
@@ -33,7 +35,7 @@ void	*listener(void *ptr)
 	char			data[sizeof(t_packet)];
 	t_packet		*ret = NULL;
 
-	while (1)
+	while (!req_exit)
 	{
 		int		tmp = 0;
 		int		rbytes = -1;
@@ -325,13 +327,11 @@ int		parse(char *str, Hunters_Online::Client *cli, Hunters_Online::Screen *scr)
 				wprintw(scr->log, "%s [recipient_username] {msg}\n", tokens[1].c_str());
 			else if (tokens[1].compare(std::string("view")) == 0)
 				wprintw(scr->log, "view [inventory/equipment/home]\n");
-			else if (tokens[1].compare(std::string("buy")) == 0)
-				wprintw(scr->log, "buy [number] hunter(s)\n");
 			else
 				wprintw(scr->log, "no help available for %s\n", tokens[1].c_str());
 		}
 		else
-			wprintw(scr->log, "available commands:\nbuy | inspect {inventory slot/equipment slot name} | message/pm/tell/whisper | view {inventory/equipment/auctions} | players\n");
+			wprintw(scr->log, "available commands:\n inspect {inventory slot/equipment slot name} | message/pm/tell/whisper | view {inventory/equipment/auctions} | players | exit\n");
 		wrefresh(scr->log);
 		return (1);
 	}
@@ -382,7 +382,10 @@ int		main(int argc, char **argv)
 			char	*pw = (char*)m->pass.c_str();
 			memcpy(cli->name, us, strlen(us));
 			if (m->attemptLogin(cli->conn_fd, us, pw) > 0)
+			{
+				delete m;
 				break ;
+			}
 		}
 		else if (cli->conn_fd < 0)
 			mvwprintw(m->mainwin, 6, 1, "server dead! :(    ");
@@ -400,7 +403,7 @@ int		main(int argc, char **argv)
 	d.scr = &scr;
 	d.plr = &plr;
 	pthread_create(&listenthread, NULL, listener, &d);
-	while (1)
+	while (!req_exit)
 	{
 		int c = wgetch(scr.console);
 		if (c == '\033')
@@ -443,10 +446,10 @@ int		main(int argc, char **argv)
 					form_driver(scr.form, REQ_VALIDATION);
 					buf = field_buffer(scr.input[0], 0) + 1;
 					buf[unpad(buf)] = 0;
-					if (strncmp(buf, "exit", 4) == 0)
+					if (strcmp(buf, "exit") == 0)
 					{
 						close(cli->conn_fd);
-						exit(0);
+						req_exit = 1;
 					}
 					//mvwprintw(scr.console, 1, 1, buf);
 					else if (!parse(buf, cli, &scr))
@@ -465,4 +468,5 @@ int		main(int argc, char **argv)
 		//wrefresh(scr.info);
 		i++;
 	}
+	delete cli;
 }

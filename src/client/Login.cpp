@@ -57,6 +57,7 @@ int	LoginManager::attemptLogin(int fd, char *user, char *pass)
 	bzero(p.id, 16);
 	bzero(p.command, 16);
 	signal(SIGPIPE, SIG_IGN);
+	signal(SIGINT, &int_handler);
 	for (int i = 0; i != 30; i++)
 		bzero(p.data[i], 16);
 	std::hash<std::string> hasher;
@@ -112,7 +113,7 @@ int	LoginManager::attemptLogin(int fd, char *user, char *pass)
 int LoginManager::readInput()
 {
 	char	*userbuf = NULL;
-	while (1)
+	while (!to_exit)
 	{
 		int c = wgetch(mainwin);
 		switch (c)

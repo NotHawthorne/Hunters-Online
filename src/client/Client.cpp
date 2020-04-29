@@ -343,6 +343,11 @@ int	Hunters_Online::Client::initDB()
 
 Hunters_Online::Client::~Client()
 {
+	inventory.clear();
+	equipment.clear();
+	auras.clear();
+	item_base.clear();
+	plist.clear();
 	close(conn_fd);
 }
 
