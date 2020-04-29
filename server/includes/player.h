@@ -20,6 +20,7 @@ typedef struct	s_combat_frame
 	int		dot[5];
 	int		dec[5];
 	int		next_tick;
+	bool		ko;
 }				t_combat_frame;
 
 class	Monster {
