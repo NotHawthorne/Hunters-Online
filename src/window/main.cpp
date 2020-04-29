@@ -179,12 +179,12 @@ int		parse(char *str, Hunters_Online::Client *cli, Hunters_Online::Screen *scr)
 		{
 			cli->state = INVENTORY;
 			cli->updateDisplay(scr->display, INVENTORY);
-			for (std::map<int, Item *>::iterator it = cli->inventory.begin(); it != cli->inventory.end(); ++it)
+			/*for (std::map<int, Item *>::iterator it = cli->inventory.begin(); it != cli->inventory.end(); ++it)
 			{
 				wprintw(scr->log, "%d - %s\n", x, cli->item_base[it->second->base_id]->name);
 				++x;
 			}
-			wrefresh(scr->log);
+			wrefresh(scr->log); <= SEGV (unneeded anyways)*/
 			return (1);
 		}
 		else if (desire.compare("equipment") == 0)
@@ -198,13 +198,13 @@ int		parse(char *str, Hunters_Online::Client *cli, Hunters_Online::Screen *scr)
 
 			cli->state = EQUIPMENT;
 			cli->updateDisplay(scr->display, EQUIPMENT);
-			for (std::map<int, Item *>::iterator it_eq = cli->equipment.begin(); \
+			/*for (std::map<int, Item *>::iterator it_eq = cli->equipment.begin(); \
 				it_eq != cli->equipment.end(); it_eq++)
 			{
 				wprintw(scr->log, "%d - %s\n", x, cli->item_base[it_eq->second->base_id]->name);
 				++x;
 			}
-			wrefresh(scr->log);
+			wrefresh(scr->log); <= SEGV (unneeded anyways)*/
 			return (1);
 		}
 		else if (desire.compare("home") == 0)
