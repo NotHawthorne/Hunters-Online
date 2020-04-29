@@ -1,13 +1,13 @@
 NAME = hunters
-CC := g++
+CXX := g++
 
 all: $(NAME)
 
-MODULES := src/window src/client includes
+MODULES := src/window src/client includes includes/antlr4-runtime src/grammar
 LIBDIRS := 
-LIBS := -lncurses -lform -lpthread -lsqlite3
 #CXXFLAGS := -Iincludes -Wall -Werror -Wextra -g
-CXXFLAGS := -Iincludes -g #-fsanitize=address
+CXXFLAGS := -I./includes -Iincludes/antlr4-runtime -g #-fsanitize=address
+LDFLAGS := -L./libs -lantlr4-runtime -lncurses -lform -lpthread -lsqlite3
 MODNAME := module.mk
 DEBUGDEFINES := -D_DEBUG
 SRC :=
@@ -23,7 +23,7 @@ debug: CXXFLAGS += -D_DEBUG
 debug: re
 
 $(NAME): $(OBJ)
-	@$(CC) $(CXXFLAGS) $(OBJ) $(LIBS) -o $@
+	@$(CXX) $(CXXFLAGS) $(OBJ) -o $@ $(LDFLAGS)
 
 %.d : %.c
 	@./depend.sh $*.o $(CXXFLAGS) $< > $@

@@ -31,7 +31,7 @@ int	Player::tick(Server *s)
 			for (int i = 0; i != 5 && it->second->enchants[i]; i++)
 			{
 				int ret = 0;
-				if ((ret = s->auras[it->second->enchants[i]]->process(this, it->second, &s->item_bases, fr, it->second->scale[i])) > 1)
+				if ((ret = s->auras[it->second->enchants[i]]->process(this, it->second, &s->item_bases, fr, it->second->scale[i])) > 1 && !fr->next_tick)
 				{
 					switch (s->auras[it->second->enchants[i]]->enchant)
 					{
@@ -62,24 +62,27 @@ int	Player::tick(Server *s)
 			}
 			if (s->item_bases[it->second->base_id]->armor)
 				fr->armor_mit += s->item_bases[it->second->base_id]->armor;
-			if (s->item_bases[it->second->base_id]->damage_min)
+			if (s->item_bases[it->second->base_id]->damage_min && !fr->next_tick)
 				fr->dmg += (s->item_bases[it->second->base_id]->damage_min + (rand() % (s->item_bases[it->second->base_id]->damage_max - s->item_bases[it->second->base_id]->damage_min)));
 		}
 	}
-	if (fr->heal_amt)
+	if (fr->heal_amt && !fr->next_tick)
 		hp += fr->heal_amt;
-	if (rand() % (1000 - (dex + fr->dexbuff) <= 0 ? 1 : 1000 - (dex + fr->dexbuff)) == 0 || fr->crit)
+	if (!fr->next_tick && (rand() % (1000 - (dex + fr->dexbuff) <= 0 ? 1 : 1000 - (dex + fr->dexbuff)) == 0 || fr->crit))
 	{
 		s->notify(this, std::string("Critical hit!"), LOG);
 		fr->dmg += fr->dmg + (dex + fr->dexbuff);
 	}
 	if (mon.hp > 0 && fd > 0)
 	{
-		mon.hp -= fr->dmg + ((str + fr->strbuff) / 2);
-		s->notify(this, string_format("You deal %d damage to the monsters! (%d / %d)", fr->dmg + ((str + fr->strbuff) / 2), mon.hp, mon.max_hp), LOG);
+		if (!fr->next_tick)
+		{
+			mon.hp -= fr->dmg + ((str + fr->strbuff) / 2);
+			s->notify(this, string_format("You deal %d damage to the monsters! (%d / %d)", fr->dmg + ((str + fr->strbuff) / 2), mon.hp, mon.max_hp), LOG);
+		}
 		hp -= (mon.dmg - (armor_mit / 20));
 		s->notify(this, string_format("You take %d damage.", mon.dmg - (armor_mit / 20)), LOG);
-		if (fr->lifesteal_amt)
+		if (fr->lifesteal_amt && !fr->next_tick)
 		{
 			s->notify(this, string_format("You stole %d health.", fr->lifesteal_amt), LOG);
 			hp += fr->lifesteal_amt;
@@ -113,6 +116,8 @@ int	Player::tick(Server *s)
 	dex += fr->dexbuff;
 	intel += fr->intbuff;
 	max_hp += fr->max_hp_mod;
+	if (fr->next_tick)
+		fr->next_tick--;
 	s->sendStatus(this);
 	str -= fr->strbuff;
 	dex -= fr->dexbuff;

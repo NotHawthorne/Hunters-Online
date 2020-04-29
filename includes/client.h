@@ -14,6 +14,9 @@
 #include <vector>
 #include <sqlite3.h>
 #include <map>
+#include "antlr4-runtime/antlr4-runtime.h"
+#include "HuntersLexer.h"
+#include "HuntersParser.h"
 #include "utils.h"
 #include "effect.h"
 #include "item.h"

@@ -1,5 +1,15 @@
 # patch notes
 ---
+# 8:00 AM, Apr 29
+## general
+- removed hunter buying, as they are no longer relevant to the current game's direction
+## server
+- added a death timeout for players
+## client
+- added dependencies and grammar rules for new parser
+
+-- this means that death will cause you to be inactive for a small period of time
+---
 # 7:03 PM, Apr 27
 ## general
 - equipment/equipping was fundamentally broken on all counts, and now works fully :)
