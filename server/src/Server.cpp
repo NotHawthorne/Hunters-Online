@@ -48,6 +48,9 @@ Server::Server()
 	std::cout << "Loading auctions...\n";
 	loadAuctions();
 	std::cout << "Loaded " << auctions.size() << " auctions!\n";
+	std::cout << "Loading characters...\n";
+	loadCharacters();
+	std::cout << "Loaded " << characters.size() << " characters!\n";
 	std::cout << "Done!\n";
 }
 
@@ -70,7 +73,7 @@ int	Server::notify(Player *p, std::string info, int level)
 		bzero(pa->data[x], 16);
 		memcpy(pa->data[x++], d + i, info.size() - i > 15 ? 15 : info.size() - i);
 	}
-	p->packet_queue->push(pa);
+	p->packet_queue->push((void*)pa, sizeof(t_packet));
 	//write(p->fd, &pa, sizeof(t_packet));
 	return (1);
 }
@@ -138,7 +141,7 @@ int	Server::sendItemList(Player *p, std::map<int, Item *> *list, int type)
 	bzero(header->data[1], 16);
 	memcpy(header->data[0], std::to_string(list->size()).c_str(), std::to_string(list->size()).size());
 	memcpy(header->data[1], std::to_string(type).c_str(), std::to_string(type).size());
-	p->packet_queue->push(header);
+	p->packet_queue->push((void*)header, sizeof(t_packet));
 	//write(p->fd, &header, sizeof(t_packet));
 	for (std::map<int, Item *>::iterator it = list->begin(); it != list->end(); ++it)
 	{
@@ -162,7 +165,7 @@ int	Server::sendItemList(Player *p, std::map<int, Item *> *list, int type)
 		memcpy(pa->data[12], std::to_string(it->second->scale[4]).c_str(), std::to_string(it->second->scale[4]).size());
 		if (type == 2)
 			memcpy(pa->data[13], std::to_string(auctions.find(it->second->instance_id)->second->gold).c_str(), std::to_string(auctions.find(it->second->instance_id)->second->gold).size());
-		p->packet_queue->push(pa);
+		p->packet_queue->push((void*)pa, sizeof(t_packet));
 		//write(p->fd, &pa, sizeof(t_packet));
 	}
 	return (1);
@@ -245,6 +248,34 @@ int	Server::loadEquip()
 {
 	std::string q("SELECT * FROM equip;");
 	sqlite3_exec(db, q.c_str(), load_equip_callback, (void*)this, NULL);
+	return (1);
+}
+
+Character::Character(char **argv)
+{
+	bzero(name, 16);
+	bzero(acc, 16);
+	memcpy(name, argv[1], strlen(argv[1]));
+	memcpy(acc, argv[4], strlen(argv[4]));
+	pclass = std::atoi(argv[2]);
+	race = std::atoi(argv[3]);	
+}
+
+static int	load_characters_callback(void *d, int argc, char **argv, char **colname)
+{
+	if (!argc || !colname)
+		return (1);
+	Server *s = (Server *)d;
+	Character	*c = new Character(argv);
+	s->characters.insert(std::pair<std::string, Character *>(std::string(c->name), c));
+	return (0);
+}
+
+int	Server::loadCharacters()
+{
+	std::string q("SELECT * FROM characters;");
+	if (sqlite3_exec(db, q.c_str(), load_characters_callback, (void*)this, NULL) != SQLITE_OK)
+		printf("error loading chars\n");
 	return (1);
 }
 
@@ -436,10 +467,84 @@ int	Server::loadAuras()
 	return (1);
 }
 
+int	Server::newAccount(int nfd, char *name)
+{
+	t_login_packet	p;
+	int		rbytes = 0;
+	Player		*pl = new Player();
+	while (rbytes < sizeof(t_login_packet))
+	{
+		int t = read(nfd, ((char*)(&p)) + rbytes, sizeof(t_login_packet) - rbytes);
+		if (t > 0)
+			rbytes += t;
+	}
+	std::string	q = string_format("INSERT INTO users(name, pass) VALUES(\"%s\", \"%s\");", name, p.pass);
+	int rc = sqlite3_exec(db, q.c_str(), NULL, 0, NULL);
+	if (rc != SQLITE_OK)
+		return (printf("char creation failed\n"));
+	respondLogin(nfd, true);
+	memcpy(pl->name, name, strlen(name));
+	memcpy(pl->pass, p.pass, strlen(p.pass));
+	pl->hunters = 1;
+	pl->str = 10;
+	pl->fd = nfd;
+	pl->gold = 100;
+	pl->hunters = 1;
+	pl->str = 10;
+	pl->intel = 10;
+	pl->dex = 10;
+	pl->hp = 100;
+	pl->max_hp = 100;
+	pl->mana = 100;
+	pl->max_mana = 100;
+	pl->groupid = 0;
+	pl->lvl = 1;
+	pl->exp = 0;
+	players.insert(std::pair<std::string, Player *>(std::string(pl->name), pl));
+	notify(pl, "Successfully registered new acount! Welcome!", SYSTEM);
+	return (1);
+}
+
+Character::Character(t_character_packet *p, char *pacc)
+{
+	bzero(name, 16);
+	memcpy(name, p->name, strlen(p->name));
+	pclass = p->pclass;
+	race = p->race;
+	bzero(acc, 16);
+	memcpy(acc, pacc, strlen(pacc));
+}
+
+int	Server::newChar(int nfd, char *name)
+{
+	if (players.find(std::string(name)) == players.end())
+		return (0);
+	t_character_packet	p;
+	Player	*pl = players.find(std::string(name))->second;
+	int rbytes = 0;
+	while (rbytes < sizeof(t_character_packet))
+	{
+		int t = read(nfd, ((void*)(&p)) + rbytes, sizeof(t_character_packet) - rbytes);
+		if (t > 0)
+			rbytes += t;
+	}
+	Character	*c = new Character(&p, name);
+
+	//look here to add stats based on race and class to new char
+	std::string	q = string_format("INSERT INTO equip(name, head, shoulders, chest, legs, feet, hands, wrists, waist, neck, finger1, finger2, main_hand, off_hand) VALUES (\"%s\", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0); INSERT INTO characters(name, pclass, race, acc) VALUES (\"%s\", %d, %d, \"%s\"); INSERT INTO stats (name, gold, hunters, str, intel, dex, hp, max_hp, mana, max_mana, groupid, lvl, gold_exponent, exp, access) VALUES (\"%s\", 100, 1, 10, 10, 10, 100, 100, 100, 100, 0, 1, 0, 0, 0);", p.name, p.name, name, p.name);
+	int rc = sqlite3_exec(db, q.c_str(), NULL, 0, NULL);
+	if (rc != SQLITE_OK)
+		return (printf("character creation failed\n"));
+	return (1);
+}
+
 int	Server::newPlayer(t_packet *pack, int nfd)
 {
+	(void*)pack;
+	(void*)nfd;
+	return (0);
+	/*
 	Player	*pl = new Player();
-	std::string	q = string_format("INSERT INTO equip(name, head, shoulders, chest, legs, feet, hands, wrists, waist, neck, finger1, finger2, main_hand, off_hand) VALUES (\"%s\", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0); INSERT INTO users (name, pass) VALUES (\"%s\", \"%s\"); INSERT INTO stats (name, gold, hunters, str, intel, dex, hp, max_hp, mana, max_mana, groupid, lvl, gold_exponent, exp, access) VALUES (\"%s\", 100, 1, 10, 10, 10, 100, 100, 100, 100, 0, 1, 0, 0, 0);", pack->id, pack->id, pack->data[0], pack->id);
 
 	int rc = sqlite3_exec(db, q.c_str(), NULL, 0, NULL);
 	if (rc != SQLITE_OK)
@@ -463,6 +568,7 @@ int	Server::newPlayer(t_packet *pack, int nfd)
 	players.insert(std::pair<std::string, Player *>(std::string(pl->name), pl));
 	notify(pl, "Successfully registered new acount! Welcome!", SYSTEM);
 	return (1);
+	*/
 }
 
 int	Server::sendStatus(Player *p)
@@ -497,7 +603,7 @@ int	Server::sendStatus(Player *p)
 	memcpy(pack->data[10], _lvl.c_str(), _lvl.size() + 1);
 	memcpy(pack->data[11], _exp.c_str(), _exp.size() + 1);
 	memcpy(pack->data[12], _gold_exponent.c_str(), _gold_exponent.size() + 1);
-	p->packet_queue->push(pack);
+	p->packet_queue->push((void*)pack, sizeof(t_packet));
 	//if (write(p->fd, &pack, sizeof(t_packet)) <= 0)
 		//printf("error writing to fd: %d\n", p->fd);
 	return (1);
@@ -509,15 +615,52 @@ int	Server::sendChat(t_packet *pack)
 	{
 		t_packet *p = new t_packet;
 		memcpy(p, &(*pack), sizeof(t_packet));
-		it->second->packet_queue->push(p);
+		it->second->packet_queue->push((void*)p, sizeof(t_packet));
 	}
 	return (1);
 }
 
-int	Server::loginRequest(t_packet *pack)
+int	Server::sendCharacters(t_packet_header *h)
+{
+	if (players.find(std::string(h->id)) == players.end())
+		return (0);
+	for (std::map<std::string, Character *>::iterator it = characters.begin(); it != characters.end(); ++it)
+	{
+		Player	*p = players.find(std::string(it->second->name))->second;
+		printf("%s\n", it->first.c_str());
+		t_character_packet	*pack = new t_character_packet;
+		bzero(pack, sizeof(t_character_packet));
+		memcpy(pack->name, it->second->name, strlen(it->second->name));
+		pack->pclass = it->second->pclass;
+		pack->race = it->second->race;
+		pack->level = p->lvl;
+		pack->hp = p->hp;
+		pack->max_hp = p->max_hp;
+		pack->mana = p->mana;
+		pack->max_mana = p->max_mana;
+		p->packet_queue->push((void*)pack, sizeof(t_character_packet));
+		printf("added %s to char queue\n", pack->name);
+		if (p->fd < 0)
+			printf("player dcd tho\n");
+	}
+	return (1);
+}
+
+int	Server::loginRequest(t_packet_header *h, int nfd)
 {
 	int	ret = 0;
-	std::string	q = string_format("SELECT * from users where name = \"%s\" and pass = %s COLLATE NOCASE;", pack->id, pack->data[0]);
+	t_login_packet	p;
+	int		rbytes = 0;
+	while (rbytes < sizeof(t_login_packet))
+	{
+		int t = read(nfd, ((char*)(&p)) + rbytes, sizeof(t_login_packet) - rbytes);
+		if (t > 0)
+			rbytes += t;
+	}
+	if (strlen(p.pass) >= 16)
+		p.pass[15] = 0;
+	printf("pass: %s\n", p.pass);
+	std::string	q = string_format("SELECT * from users where name = \"%s\" and pass = %s COLLATE NOCASE;", h->id, p.pass);
 	sqlite3_exec(db, q.c_str(), verify_callback, (void*)&ret, NULL);
 	return (ret);
 }
@@ -581,7 +724,7 @@ int	Server::sendPlayerList(t_packet *pack, Player *p)
 	int	amt_send = amt + 25 > players.size() ? players.size() % 25 : 25;
 	memcpy(header->data[0], std::to_string(amt_send).c_str(), std::to_string(amt_send).size());
 	int	x = 0;
-	p->packet_queue->push(header);
+	p->packet_queue->push((void*)header, sizeof(t_packet));
 	auto iter = players.begin();
 	std::advance(iter, amt);
 	for (std::map<std::string, Player *>::iterator it = players.begin(); it != players.end() && x < amt_send; ++it)
@@ -590,7 +733,7 @@ int	Server::sendPlayerList(t_packet *pack, Player *p)
 		{
 			t_packet	*pa = createPacket(it->second->name, "PLAYER");
 			memcpy(pa->data[0], std::to_string(it->second->lvl).c_str(), std::to_string(it->second->lvl).size());
-			p->packet_queue->push(pa);
+			p->packet_queue->push((void*)pa, sizeof(t_packet));
 			x++;
 		}
 	}
@@ -599,19 +742,22 @@ int	Server::sendPlayerList(t_packet *pack, Player *p)
 
 int	Server::processPacket(t_packet *pack, int nfd)
 {
+	(void*)pack;
+	(void*)nfd;
+	return (0);
+	/*
 	std::string	plr(pack->id);
 	std::string	cmd(pack->command);
 	Player		*p = players.find(plr)->second;
 
 	if (cmd.compare("BUY_HUNTER") == 0)
 	{
-		/*
 		int	amt = atoi(pack->data[0]);
 		if (p->gold >= (100 * amt))
 		{
 			p->gold -= (100 * amt);
 			p->hunters += amt;
-		}*/
+		}
 		notify(p, std::string("Hunter buying is in the process of being removed from the game, in favor of more complex encounters."), SYSTEM);
 		return (1);
 	}
@@ -654,8 +800,8 @@ int	Server::processPacket(t_packet *pack, int nfd)
 			t_packet	*b = new t_packet;
 			memcpy(a, &(*pack), sizeof(t_packet));
 			memcpy(b, &(*pack), sizeof(t_packet));
-			players[std::string(pack->data[0])]->packet_queue->push(a);
-			p->packet_queue->push(b);
+			players[std::string(pack->data[0])]->packet_queue->push((void*)a, sizeof(t_packet));
+			p->packet_queue->push((void*)b, sizeof(t_packet));
 			//write(players[std::string(pack->data[0])]->fd, &(*pack), sizeof(t_packet));
 			//write(nfd, &(*pack), sizeof(t_packet));
 		}
@@ -742,6 +888,7 @@ int	Server::processPacket(t_packet *pack, int nfd)
 	else
 		printf("unhandled command: %s\n", cmd.c_str());
 	return (1);
+	*/
 }
 
 int	Server::removeAuction(t_packet *pack)

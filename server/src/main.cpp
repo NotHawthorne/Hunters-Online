@@ -88,11 +88,11 @@ int		loop(void)
 				}
 				else
 				{
-					t_packet	pack;
+					t_packet_header	pack;
 					int		nbytes;
 					printf("here data\n");
-					nbytes = read(i, &pack, sizeof(t_packet));
-					printf("%d | %zu\n", nbytes, sizeof(t_packet));
+					nbytes = read(i, &pack, sizeof(t_packet_header));
+					printf("%d | %zu\n", nbytes, sizeof(t_packet_header));
 					if (nbytes <= 0)
 					{
 						printf("err\n");
@@ -102,6 +102,21 @@ int		loop(void)
 							if (it->second->fd == i)
 								serv.removePlayer(it->second);
 					}
+					Player	*p = serv.players.find(std::string(pack.id))->second;
+					switch (pack.cmd)
+					{
+						case CLIENT_LOGIN:
+							if (serv.loginRequest(&pack, i) == 1)
+							{
+								p->fd = i;
+								serv.sendCharacters(&pack);
+							}
+							printf("login request from %s\n", pack.id);
+							break ;
+						//if its a char select, register char to user and begin game loop!!!! so close!
+					}
+					printf("%d\n", pack.cmd);
+					/*
 					else if (serv.playerExists(&pack))
 					{
 						if (serv.processPacket(&pack, i) == -1)
@@ -125,7 +140,7 @@ int		loop(void)
 					{
 						printf("here new\n");
 						serv.newPlayer(&pack, i);
-					}
+					}*/
 				}
 			}
 		}

@@ -19,7 +19,7 @@ DEBUGDEFINES := -D_DEBUG
 CXX = g++
 CXXFLAGS = -Iincludes -lpthread -lsqlite3 -g -fsanitize=address
 
-debug: CFLAGS += -D_DEBUG
+debug: CXXFLAGS += -D_DEBUG
 debug: re
 
 all: $(NAME)

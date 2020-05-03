@@ -45,6 +45,16 @@ public:
 	int		gold;
 };
 
+class Character {
+public:
+	char	name[16];
+	char	acc[16];
+	int	pclass;
+	int	race;
+	Character(char **argv);
+	Character(t_character_packet *p, char *pacc);
+};
+
 class	Server {
 public:
 	Server();
@@ -57,7 +67,7 @@ public:
 	int		sendChat(t_packet *p);
 	int		sqlBackup();
 	int		loadPlayers();
-	int		loginRequest(t_packet *p);
+	int		loginRequest(t_packet_header *h, int nfd);
 	int		awardKill(Player *p);
 	int		notify(Player *p, std::string str, int level);
 	int		sendItemList(Player *p, std::map<int, Item *> *list, int type);
@@ -75,6 +85,10 @@ public:
 	int		loadAuctions();
 	int		addAuction(t_packet *pack);
 	int		removeAuction(t_packet *pack);
+	int		newAccount(int nfd, char *id);
+	int		newChar(int nfd, char *name);
+	int		loadCharacters();
+	int		sendCharacters(t_packet_header *h);
 
 	int								sock;
 	fd_set							active_fd_set;
@@ -84,6 +98,7 @@ public:
 	std::map<int, ItemBase *>		item_bases;
 	std::map<int, Auction *>		auctions;
 	std::map<int, Aura *>			auras;
+	std::map<std::string, Character *>	characters;
 	struct sockaddr_in				servaddr;
 	sqlite3							*db;
 };

@@ -11,6 +11,45 @@ PacketQueue::PacketQueue()
 	size = 0;
 }
 
+t_packet_header	*newHeader(char *id, int cmd, int amt)
+{
+	t_packet_header *h = new t_packet_header;
+	bzero(h, sizeof(t_packet_header));
+	memcpy(h->id, id, strlen(id));
+	h->cmd = cmd;
+	h->amt = amt;
+	return (h);
+}
+
+int	PacketQueue::pushLoginResponse(bool success)
+{
+	t_packet_header	*h = newHeader("SERVER", success ? SERVER_LOGIN_SUCCESS : SERVER_LOGIN_FAIL, 0);
+	push((void*)h, sizeof(t_packet_header));
+	return (1);
+}
+
+int	PacketQueue::pushStatus(int g, int h, int str, int intel, int dex, int hp,
+			int max_hp, int mana, int max_mana, int groupid, int lvl,
+			int exp, int gold_exponent)
+{
+	t_status_packet *p = new t_status_packet;
+	push((void*)newHeader("SERVER", SERVER_STATUS, 1), sizeof(t_packet_header));
+	p->g = g;
+	p->h = h;
+	p->intel = intel;
+	p->dex = dex;
+	p->hp = hp;
+	p->max_hp = max_hp;
+	p->mana = mana;
+	p->max_mana = max_mana;
+	p->groupid = groupid;
+	p->lvl = lvl;
+	p->exp = exp;
+	p->gold_exponent = gold_exponent;
+	push((void*)p, sizeof(t_status_packet));
+	return (1);
+}
+
 PacketQueue::~PacketQueue()
 {
 	Packet	*p = q;
@@ -25,18 +64,18 @@ PacketQueue::~PacketQueue()
 	}
 }
 
-int	PacketQueue::push(t_packet *p)
+int	PacketQueue::push(void *p, size_t size)
 {
 	if (!p)
 		return (0);
 	if (!is_empty)
 	{
-		tail->next = new Packet(p);
+		tail->next = new Packet(p, size);
 		tail = tail->next;
 	}
 	else
 	{
-		tail = new Packet(p);
+		tail = new Packet(p, size);
 		q = tail;
 		is_empty = false;
 	}
@@ -48,23 +87,22 @@ int	PacketQueue::push(t_packet *p)
 	return (1);
 }
 
-t_packet	*PacketQueue::pop()
+Packet	*PacketQueue::pop()
 {
 	Packet	*p;
-	t_packet *pa;
+	Packet	*ret;
 
 	if (is_empty == true)
 		return (0);
+	ret = q;
 	p = q->next;
-	pa = q->pack;
-	delete q;
 	if (!p)
 	{
 		is_empty = true;
 	}
 	q = p;
 	size--;
-	return (pa);
+	return (ret);
 }
 
 int	PacketQueue::send(int fd)
@@ -74,15 +112,16 @@ int	PacketQueue::send(int fd)
 	int	i = 0;
 	t_packet	*tmpack;
 
-	while (tmpack = pop())
+	while (tmp = pop())
 	{
-		if (conn && write(fd, &(*tmpack), sizeof(t_packet)) < 0)
+		if (conn && write(fd, tmp->pack, tmp->size) < 0)
 			conn = false;
-		delete tmpack;
+		delete tmp->pack;
+		delete tmp;
 	}
 	return (conn);
 }	
 
-Packet::Packet(t_packet *p) { pack = p; next = 0; }
+Packet::Packet(void *p, size_t sz) { pack = p; size = sz; next = 0; }
 bool	PacketQueue::empty() { return (is_empty); };
-t_packet	*PacketQueue::front() { return (q->pack); }
+void	*PacketQueue::front() { return (q->pack); }
