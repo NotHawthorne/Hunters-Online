@@ -3,6 +3,7 @@
 
 # include <cstddef>
 # include <string.h>
+# include <sys/socket.h>
 
 enum	Log_Levels
 {
@@ -115,7 +116,7 @@ public:
 	PacketQueue();
 	~PacketQueue();
 	int		push(void *p, size_t size);
-	int		pushLoginResponse(bool success);
+	int		pushLoginResponse(bool success, int amt);
 	int		pushStatus(int g, int h, int str,
 					int intel, int dex, int hp,
 					int max_hp, int mana, int max_mana,
@@ -124,7 +125,7 @@ public:
 	bool	empty();
 	Packet		*pop();
 	void		*front();
-	int		send(int fd);
+	int		sendData(int fd);
 };
 
 #endif

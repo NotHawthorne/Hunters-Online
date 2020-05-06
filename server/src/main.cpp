@@ -108,6 +108,7 @@ int		loop(void)
 						case CLIENT_LOGIN:
 							if (serv.loginRequest(&pack, i) == 1)
 							{
+								p->packet_queue->pushLoginResponse(true, 1);
 								p->fd = i;
 								serv.sendCharacters(&pack);
 							}

@@ -21,9 +21,9 @@ t_packet_header	*newHeader(char *id, int cmd, int amt)
 	return (h);
 }
 
-int	PacketQueue::pushLoginResponse(bool success)
+int	PacketQueue::pushLoginResponse(bool success, int amt)
 {
-	t_packet_header	*h = newHeader("SERVER", success ? SERVER_LOGIN_SUCCESS : SERVER_LOGIN_FAIL, 0);
+	t_packet_header	*h = newHeader("SERVER", success ? SERVER_LOGIN_SUCCESS : SERVER_LOGIN_FAIL, amt);
 	push((void*)h, sizeof(t_packet_header));
 	return (1);
 }
@@ -105,7 +105,7 @@ Packet	*PacketQueue::pop()
 	return (ret);
 }
 
-int	PacketQueue::send(int fd)
+int	PacketQueue::sendData(int fd)
 {
 	Packet	*tmp;
 	bool	conn = true;
@@ -114,8 +114,10 @@ int	PacketQueue::send(int fd)
 
 	while (tmp = pop())
 	{
-		if (conn && write(fd, tmp->pack, tmp->size) < 0)
+		int ret;
+		if (conn && (ret = send(fd, tmp->pack, tmp->size, NULL)) < 0)
 			conn = false;
+		printf("wrote %zu to %d, %d\n", tmp->size, fd, ret);
 		delete tmp->pack;
 		delete tmp;
 	}

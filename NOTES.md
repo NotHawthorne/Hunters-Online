@@ -39,6 +39,8 @@
 ```
 # MISC
 ---
+- Walk/run stamina
+---
 - Economy notes: Create analytics for most popular stats/item bases once auction house goes live for numbers feedback
 ---
 - I need to make a game info container for the server and client

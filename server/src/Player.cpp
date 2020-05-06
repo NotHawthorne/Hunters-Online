@@ -142,7 +142,7 @@ int	Player::tick(Server *s)
 	fr->crit = 0;
 	fr->next_tick = fr->next_tick ? fr->next_tick - 1 : 0;
 	fr->armor_mit = 0;
-	int ret = packet_queue->send(fd);
+	int ret = packet_queue->sendData(fd);
 	if (dead || kill)
 		return (dead ? 3 : 2);
 	return (ret);

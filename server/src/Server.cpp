@@ -651,12 +651,10 @@ int	Server::loginRequest(t_packet_header *h, int nfd)
 	int	ret = 0;
 	t_login_packet	p;
 	int		rbytes = 0;
-	while (rbytes < sizeof(t_login_packet))
-	{
-		int t = read(nfd, ((char*)(&p)) + rbytes, sizeof(t_login_packet) - rbytes);
-		if (t > 0)
-			rbytes += t;
-	}
+	printf("reading login packet\n");
+	int t = recv(nfd, &p, sizeof(t_login_packet), MSG_WAITALL);
+	if (t <= 0)
+		return (0);
 	if (strlen(p.pass) >= 16)
 		p.pass[15] = 0;
 	printf("pass: %s\n", p.pass);
